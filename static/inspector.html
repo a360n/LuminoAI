@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Good / Bad Model Inspector - EL Cell Cropper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Inspect TIF Panels, Ignore EL Files, and Sort (Good Model / Bad Model)</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain"></i> AI Panel Inspection
+                </a>
+                <a href="/aipath" class="tab-btn">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitoring (AI Path)
+                </a>
+                <a href="/audit" class="tab-btn">
+                    <i class="fa-solid fa-clipboard-check"></i> Audited Panels (Registry)
+                </a>
+                <a href="/settings" class="tab-btn">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-workspace">
+            <div class="mode-container" id="inspector-mode-container" style="display: block; padding: 24px;">
+                <div class="inspector-workspace">
+                    <!-- Top Folder Input Card -->
+                    <div class="inspector-top-card" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+                        <div class="inspector-input-group">
+                            <div class="input-header">
+                                <h3 style="font-size: 18px; color: var(--text-main); margin-bottom: 6px;"><i class="fa-solid fa-folder-open text-gold"></i> TIF Panel Inspector (Good / Bad Model Sorter)</h3>
+                                <p style="font-size: 13px; color: var(--text-muted);">Enter the folder path containing EL and TIF files. EL files will be ignored, and TIF panels will be displayed sequentially for inspection and sorting.</p>
+                            </div>
+                            <div class="input-row" style="display: flex; gap: 12px; margin-top: 14px;">
+                                <input type="text" id="inspector-folder-input" class="text-input" style="flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text-main); font-family: var(--font-en); font-size: 14px;" placeholder="e.g. /Users/username/Desktop/panels or C:\Users\username\Desktop\panels">
+                                <button class="btn btn-primary btn-large" id="btn-load-inspector">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Scan & Load TIF Images
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspector Dashboard (Hidden initially) -->
+                    <div class="inspector-dashboard" id="inspector-dashboard" style="display: none; flex-direction: column; gap: 20px;">
+                        <div class="inspector-header-bar" style="display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 24px;">
+                            <div class="counter-badge" style="display: flex; align-items: center; gap: 12px;">
+                                <span class="cell-id-badge" id="inspector-counter-txt" style="background: linear-gradient(135deg, var(--brand-primary-1), var(--brand-primary-2)); color: #000; padding: 6px 16px; border-radius: 8px; font-weight: 800; font-family: var(--font-en);">Image 1 of 0</span>
+                                <span class="cell-coords-info" id="inspector-rel-path-txt" style="font-family: var(--font-en); color: var(--text-muted); font-size: 13px;">--</span>
+                            </div>
+                            <div class="stats-row" style="display: flex; gap: 14px;">
+                                <span class="badge badge-green" id="inspector-good-count" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green); border: 1px solid rgba(0, 230, 118, 0.4); padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px;">✅ Good Model: 0</span>
+                                <span class="badge badge-red" id="inspector-bad-count" style="background: rgba(255, 82, 82, 0.15); color: var(--accent-red); border: 1px solid rgba(255, 82, 82, 0.4); padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px;">❌ Bad Model: 0</span>
+                            </div>
+                        </div>
+
+                        <div class="inspector-split" style="display: grid; grid-template-columns: 1fr 420px; gap: 20px;">
+                            <!-- LEFT: IMAGE DISPLAY -->
+                            <div class="inspector-viewport" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center;">
+                                <div class="img-box" style="position: relative; width: 100%; max-height: 600px; display: flex; justify-content: center; align-items: center; background: var(--bg-viewport); border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border);">
+                                    <div class="loader-overlay" id="inspector-img-loader" style="display: none; position: absolute;">
+                                        <i class="fa-solid fa-spinner fa-spin fa-3x text-gold"></i>
+                                    </div>
+                                    <img id="inspector-current-img" src="" alt="TIF Panel Preview" style="max-width: 100%; max-height: 580px; object-fit: contain;">
+                                </div>
+                                <div style="margin-top: 14px; font-family: var(--font-en); font-size: 14px; font-weight: 600; color: var(--accent-blue);" id="inspector-filename-txt">--</div>
+                            </div>
+
+                            <!-- RIGHT: ACTION BUTTONS -->
+                            <div class="inspector-sidebar" style="display: flex; flex-direction: column; gap: 20px;">
+                                <div class="card-action-box" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+                                    <h4 style="font-size: 16px; margin: 0; color: var(--text-main);"><i class="fa-solid fa-gavel text-gold"></i> Classify Current Panel</h4>
+                                    
+                                    <!-- GOOD MODEL BUTTON -->
+                                    <button class="btn btn-action-good" id="btn-model-good">
+                                        <i class="fa-solid fa-circle-check fa-2x text-green"></i>
+                                        <div style="display: flex; flex-direction: column; text-align: left;">
+                                            <span style="font-size: 18px; font-weight: 800; color: var(--accent-green);">Good Model</span>
+                                            <span style="font-size: 12px; color: var(--text-muted);">Keep image in original location without moving (1 / G)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- BAD MODEL BUTTON -->
+                                    <button class="btn btn-action-bad" id="btn-model-bad">
+                                        <i class="fa-solid fa-circle-xmark fa-2x text-red"></i>
+                                        <div style="display: flex; flex-direction: column; text-align: left;">
+                                            <span style="font-size: 18px; font-weight: 800; color: var(--accent-red);">Bad Model</span>
+                                            <span style="font-size: 12px; color: var(--text-muted);">Copy image to bad model folder (2 / B)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- STEPPER NAV -->
+                                    <div style="display: flex; gap: 12px; margin-top: 10px;">
+                                        <button class="btn btn-secondary btn-large" id="btn-inspector-prev" style="flex: 1;">
+                                            <i class="fa-solid fa-chevron-left"></i> Prev Panel
+                                        </button>
+                                        <button class="btn btn-secondary btn-large" id="btn-inspector-next" style="flex: 1;">
+                                            Next Panel <i class="fa-solid fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="info-card-box" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; font-size: 13px; color: var(--text-muted);">
+                                    <div style="margin-bottom: 8px; font-weight: 700; color: var(--text-main); font-size: 14px;"><i class="fa-solid fa-folder-tree text-gold"></i> Automatic Copy Destination:</div>
+                                    <div id="inspector-bad-dir-txt" style="font-family: var(--font-en); font-size: 12px; color: var(--accent-blue); word-break: break-all;">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Global Loading Overlay -->
+        <div class="global-loading-overlay" id="loading-overlay" style="display: none;">
+            <div class="spinner-card">
+                <i class="fa-solid fa-spinner fa-spin fa-3x text-gold"></i>
+                <p id="loading-msg">Processing and scanning TIF images...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/static/operator_manager.js?v=5.4.0"></script>
+    <script src="/static/inspector.js?v=5.4.0"></script>
+</body>
+</html>

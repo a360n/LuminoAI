@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EL Cell Cropper & Sorter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Panel Cropping, Data Aggregation, and Balanced Cell Sorting</p>
+                </div>
+            </div>
+            
+            <!-- Mode Switcher Tabs -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn" id="tab-ai-mode">
+                    <i class="fa-solid fa-brain"></i> AI Panel Inspection
+                </a>
+                <a href="/aipath" class="tab-btn" id="tab-aipath-mode">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitoring (AI Path)
+                </a>
+                <a href="/audit" class="tab-btn" id="tab-audit-mode">
+                    <i class="fa-solid fa-clipboard-check"></i> Audited Panels (Registry)
+                </a>
+                <a href="/settings" class="tab-btn" id="tab-settings-mode">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <a href="/" class="tab-btn active" id="tab-cropper-mode">
+                    <i class="fa-solid fa-crop-simple"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+
+                <label for="file-input" class="btn btn-primary" id="btn-header-upload">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Upload Panel (.tif)</span>
+                </label>
+                <input type="file" id="file-input" accept=".tif,.tiff,.png,.jpg,.jpeg" style="display: none;">
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-workspace">
+            
+            <!-- MODE 1: SINGLE PANEL VIEW -->
+            <div class="mode-container" id="single-mode-container">
+                <div class="upload-dropzone-container" id="dropzone-container">
+                    <div class="dropzone-card" id="dropzone-card">
+                        <div class="dropzone-icon"><i class="fa-solid fa-file-image"></i></div>
+                        <h2>Drag & drop panel (.tif) image here or click to browse</h2>
+                        <p>Image is preprocessed via process_tif.py then sliced into 144 cells at 224x224 px</p>
+                        <div class="algo-badges">
+                            <span class="badge"><i class="fa-solid fa-gears"></i> process_tif.py Processing</span>
+                            <span class="badge"><i class="fa-solid fa-check"></i> 2:1 Aspect Ratio</span>
+                            <span class="badge"><i class="fa-solid fa-shield-halved"></i> Panel Margin Safety Buffer</span>
+                            <span class="badge"><i class="fa-solid fa-grid-2"></i> 144 Cells (A1-F24)</span>
+                        </div>
+                        <button class="btn btn-outline" onclick="document.getElementById('file-input').click()">
+                            <i class="fa-solid fa-folder-open"></i> Browse Device
+                        </button>
+                    </div>
+                </div>
+
+                <div class="workspace-split" id="workspace-split" style="display: none;">
+                    <aside class="pane left-pane">
+                        <div class="pane-header">
+                            <h2><i class="fa-solid fa-microscope"></i> Sliced Cells Preview & Inspection</h2>
+                            <span class="cell-count-badge" id="cell-count-badge">144 / 144 Cells</span>
+                        </div>
+
+                        <div class="cell-inspector-card">
+                            <div class="cell-display-header">
+                                <div class="cell-id-badge" id="current-cell-id">A1</div>
+                                <div class="cell-coords-info" id="current-cell-coords">Row 1 | Col A (pos 0,0)</div>
+                            </div>
+                            <div class="cell-image-preview-wrapper">
+                                <img id="cell-preview-img" src="" alt="Cell Preview 224x224" class="cell-img">
+                                <div class="img-dimensions-tag">224 × 224 px</div>
+                                <div class="cell-loading-spinner" id="cell-loader" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                            </div>
+                            <div class="cell-navigation-bar">
+                                <button class="nav-btn" id="btn-prev-cell"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                                <select id="cell-select-dropdown" class="cell-dropdown"></select>
+                                <button class="nav-btn" id="btn-next-cell">Next <i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="matrix-grid-section">
+                            <div class="matrix-header">
+                                <h3><i class="fa-solid fa-table-cells"></i> Quick Matrix Jump (A1 - F24)</h3>
+                                <span class="hint">Click to switch cell</span>
+                            </div>
+                            <div class="matrix-grid" id="matrix-grid"></div>
+                        </div>
+
+                        <div class="stats-accordion">
+                            <div class="accordion-title">
+                                <span><i class="fa-solid fa-sliders"></i> Panel Geometric Calculations</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="stat-row"><span class="stat-label">process_tif Processing:</span> <span class="stat-val" id="stat-process-tif">Yes (Active)</span></div>
+                                <div class="stat-row"><span class="stat-label">Original Dimensions:</span> <span class="stat-val" id="stat-orig-dim">-</span></div>
+                                <div class="stat-row"><span class="stat-label">Model Dimensions (2:1):</span> <span class="stat-val" id="stat-model-dim">-</span></div>
+                                <div class="stat-row"><span class="stat-label">Padded Dimensions:</span> <span class="stat-val" id="stat-padded-dim">-</span></div>
+                                <div class="stat-row"><span class="stat-label">Cell Width (CH):</span> <span class="stat-val" id="stat-ch">-</span></div>
+                                <div class="stat-row"><span class="stat-label">Cell Height (CW):</span> <span class="stat-val" id="stat-cw">-</span></div>
+                                <div class="stat-row"><span class="stat-label">Square Side (SL):</span> <span class="stat-val" id="stat-sl">-</span></div>
+                            </div>
+                        </div>
+
+                        <div class="export-actions-section">
+                            <h3><i class="fa-solid fa-download"></i> Export Cells</h3>
+                            <div class="export-buttons-group">
+                                <button class="btn btn-success" id="btn-export-zip"><i class="fa-solid fa-file-zipper"></i> <span>Download ZIP Archive (144 cells)</span></button>
+                                <button class="btn btn-secondary" id="btn-export-folder"><i class="fa-solid fa-folder-plus"></i> <span>Save to Local Folder (exported_cells)</span></button>
+                            </div>
+                            <div class="export-status-msg" id="export-status-msg"></div>
+                        </div>
+                    </aside>
+
+                    <section class="pane right-pane">
+                        <div class="pane-header">
+                            <h2><i class="fa-solid fa-image"></i> Full Solar Panel Preview</h2>
+                            <div class="overlay-controls">
+                                <label class="toggle-switch"><input type="checkbox" id="toggle-grid-overlay" checked><span class="slider round"></span><span class="toggle-label">Grid Overlay</span></label>
+                                <label class="toggle-switch"><input type="checkbox" id="toggle-padding-highlight" checked><span class="slider round"></span><span class="toggle-label">Safety Margin</span></label>
+                            </div>
+                        </div>
+                        <div class="full-panel-viewport" id="panel-viewport">
+                            <div class="canvas-wrapper" id="canvas-wrapper">
+                                <img id="full-panel-img" src="" alt="Full Panel" class="panel-img">
+                                <canvas id="grid-canvas" class="grid-canvas"></canvas>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- MODE 2: BATCH FOLDER PROCESSOR & DATASET BUILDER -->
+            <div class="mode-container" id="batch-mode-container" style="display: none;">
+                <div class="batch-workspace">
+                    <div class="batch-header-card">
+                        <div class="batch-card-title">
+                            <i class="fa-solid fa-folder-tree icon-large"></i>
+                            <div>
+                                <h2>Batch Panel Processing & AI Dataset Builder</h2>
+                                <p>Crop all panels, generate <strong>all cell</strong> and <strong>bad cells</strong> folders per panel, and automatically aggregate <strong>all good cells</strong> and <strong>all bad cells</strong> in root directory.</p>
+                            </div>
+                        </div>
+
+                        <div class="batch-input-row">
+                            <div class="input-group">
+                                <label for="batch-folder-path"><i class="fa-solid fa-folder"></i> Root Directory Path:</label>
+                                <input type="text" id="batch-folder-path" placeholder="Enter or paste folder path (e.g., C:\Dataset or /Users/.../Restructured)" class="text-input">
+                            </div>
+                            <button class="btn btn-secondary" id="btn-scan-folder"><i class="fa-solid fa-magnifying-glass"></i> Scan Folder</button>
+                            <button class="btn btn-success" id="btn-run-batch"><i class="fa-solid fa-play"></i> Start Batch Processing</button>
+                            <button class="btn btn-warning" id="btn-inspect-bad-panels" style="display: inline-flex;"><i class="fa-solid fa-triangle-exclamation"></i> Bad Panels Inspector</button>
+                        </div>
+                    </div>
+
+                    <div class="batch-summary-cards" id="batch-summary-cards" style="display: none;">
+                        <div class="summary-card text-blue"><div class="num" id="summary-total-panels">0</div><div class="label">Discovered Panels</div></div>
+                        <div class="summary-card text-green"><div class="num" id="summary-good-cells">0</div><div class="label">Ready 'all good cells'</div></div>
+                        <div class="summary-card text-gold"><div class="num" id="summary-bad-cells">0</div><div class="label">Ready 'all bad cells'</div></div>
+                        <div class="summary-card text-red"><div class="num" id="summary-error-panels">0</div><div class="label">Errors (if any)</div></div>
+                    </div>
+
+                    <div class="batch-log-section" id="batch-log-section" style="display: none;">
+                        <h3><i class="fa-solid fa-list-check"></i> Processing Log & Generated Directories</h3>
+                        <div class="table-wrapper">
+                            <table class="log-table">
+                                <thead>
+                                    <tr><th>#</th><th>Panel Name (Serial)</th><th>Category</th><th>Status</th><th>all cell Folder</th><th>bad cells Folder</th></tr>
+                                </thead>
+                                <tbody id="batch-log-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE: TIF GOOD/BAD MODEL INSPECTOR -->
+            <div class="mode-container" id="inspector-mode-container" style="display: none;">
+                <div class="inspector-workspace">
+                    <!-- Top Folder Input Bar -->
+                    <div class="inspector-top-card">
+                        <div class="inspector-input-group">
+                            <div class="input-header">
+                                <h3><i class="fa-solid fa-folder-open text-gold"></i> TIF Panel Inspector (Good / Bad Model)</h3>
+                                <p>Enter directory containing EL and TIF files. EL files will be ignored and TIF images displayed sequentially for sorting.</p>
+                            </div>
+                            <div class="input-row" style="display: flex; gap: 12px; margin-top: 10px;">
+                                <input type="text" id="inspector-folder-input" class="text-input" style="flex: 1; padding: 10px 14px; background: var(--input-bg, rgba(0,0,0,0.4)); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-main);" placeholder="e.g. /Users/.../EL Dataset">
+                                <button class="btn btn-primary" id="btn-load-inspector">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Scan & Load TIF Images
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspector Dashboard (Hidden initially) -->
+                    <div class="inspector-dashboard" id="inspector-dashboard" style="display: none; flex-direction: column; gap: 16px; margin-top: 16px;">
+                        <div class="inspector-header-bar" style="display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 20px;">
+                            <div class="counter-badge" style="display: flex; align-items: center; gap: 10px;">
+                                <span class="cell-id-badge" id="inspector-counter-txt">Image 1 of 0</span>
+                                <span class="cell-coords-info" id="inspector-rel-path-txt">--</span>
+                            </div>
+                            <div class="stats-row" style="display: flex; gap: 12px;">
+                                <span class="badge badge-green" id="inspector-good-count" style="background: rgba(var(--brand-secondary-2-rgb), 0.15); color: var(--brand-secondary-2); border: 1px solid rgba(var(--brand-secondary-2-rgb), 0.4); padding: 4px 12px; border-radius: 20px; font-weight: 700;">✅ Good Model: 0</span>
+                                <span class="badge badge-red" id="inspector-bad-count" style="background: rgba(var(--accent-red-rgb), 0.15); color: var(--accent-red); border: 1px solid rgba(var(--accent-red-rgb), 0.4); padding: 4px 12px; border-radius: 20px; font-weight: 700;">❌ Bad Model: 0</span>
+                            </div>
+                        </div>
+
+                        <div class="inspector-split" style="display: grid; grid-template-columns: 1fr 380px; gap: 16px;">
+                            <!-- LEFT: IMAGE DISPLAY -->
+                            <div class="inspector-viewport" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center;">
+                                <div class="img-box" style="position: relative; width: 100%; max-height: 580px; display: flex; justify-content: center; align-items: center; background: var(--bg-viewport); border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border);">
+                                    <div class="loader-overlay" id="inspector-img-loader" style="display: none; position: absolute;">
+                                        <i class="fa-solid fa-spinner fa-spin fa-2x text-gold"></i>
+                                    </div>
+                                    <img id="inspector-current-img" src="" alt="TIF Panel Preview" style="max-width: 100%; max-height: 560px; object-fit: contain;">
+                                </div>
+                                <div style="margin-top: 10px; font-family: var(--font-en); font-size: 13px; color: var(--accent-blue);" id="inspector-filename-txt">--</div>
+                            </div>
+
+                            <!-- RIGHT: ACTION BUTTONS -->
+                            <div class="inspector-sidebar" style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="card-action-box" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                                    <h4 style="font-size: 15px; margin: 0; color: var(--text-main);"><i class="fa-solid fa-gavel text-gold"></i> Classify Current Panel</h4>
+                                    
+                                    <!-- GOOD MODEL BUTTON -->
+                                    <button class="btn btn-action-good" id="btn-model-good">
+                                        <i class="fa-solid fa-circle-check fa-2x text-green"></i>
+                                        <div style="display: flex; flex-direction: column; text-align: left;">
+                                            <span style="font-size: 16px; font-weight: 800; color: var(--accent-green);">Good Model</span>
+                                            <span style="font-size: 11px; color: var(--text-muted);">Keep image in place (1 / G)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- BAD MODEL BUTTON -->
+                                    <button class="btn btn-action-bad" id="btn-model-bad">
+                                        <i class="fa-solid fa-circle-xmark fa-2x text-red"></i>
+                                        <div style="display: flex; flex-direction: column; text-align: left;">
+                                            <span style="font-size: 16px; font-weight: 800; color: var(--accent-red);">Bad Model</span>
+                                            <span style="font-size: 11px; color: var(--text-muted);">Copy image to bad model/ folder (2 / B)</span>
+                                        </div>
+                                    </button>
+
+                                    <!-- STEPPER NAV -->
+                                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                        <button class="btn btn-secondary" id="btn-inspector-prev" style="flex: 1;">
+                                            <i class="fa-solid fa-chevron-left"></i> Previous
+                                        </button>
+                                        <button class="btn btn-secondary" id="btn-inspector-next" style="flex: 1;">
+                                            Next <i class="fa-solid fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="info-card-box" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; font-size: 12px; color: var(--text-muted);">
+                                    <div style="margin-bottom: 6px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-folder-tree text-gold"></i> Target Copy Directory:</div>
+                                    <div id="inspector-bad-dir-txt" style="font-family: var(--font-en); font-size: 11px; color: var(--accent-blue); word-break: break-all;">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE 3: AI INSPECTION & DEFECT DETECTION -->
+            <div class="mode-container" id="ai-mode-container" style="display: none;">
+                <div class="upload-dropzone-container" id="ai-dropzone-container">
+                    <div class="dropzone-card" id="ai-dropzone-card">
+                        <div class="dropzone-icon"><i class="fa-solid fa-brain text-gold"></i></div>
+                        <h2>Drag & drop panel (.tif) image here for AI inspection</h2>
+                        <p>Image is processed via process_tif.py, sliced into 144 cells, and inspected with EfficientNet-B0 to detect defects and compute panel health</p>
+                        <div class="algo-badges">
+                            <span class="badge"><i class="fa-solid fa-brain text-gold"></i> EfficientNet-B0 Model</span>
+                            <span class="badge"><i class="fa-solid fa-bolt text-blue"></i> GPU Acceleration (MPS / CUDA)</span>
+                            <span class="badge"><i class="fa-solid fa-circle-xmark text-red"></i> Defects Tagged with ❌</span>
+                            <span class="badge"><i class="fa-solid fa-gears"></i> process_tif Preprocessing</span>
+                        </div>
+                        <label for="ai-file-input" class="btn btn-primary btn-large">
+                            <i class="fa-solid fa-folder-open"></i> Select TIF Panel for AI Inspection
+                        </label>
+                        <input type="file" id="ai-file-input" accept=".tif,.tiff,.png,.jpg,.jpeg" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="ai-top-bar" id="ai-top-bar" style="display: none;">
+                    <div class="ai-input-group">
+                        <label for="ai-file-input-reupload" class="btn btn-outline" id="lbl-ai-upload">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>Inspect Another Panel (.tif / .tiff)</span>
+                        </label>
+                        <input type="file" id="ai-file-input-reupload" accept=".tif,.tiff,.png,.jpg,.jpeg" style="display: none;">
+                        <span id="ai-file-name" class="file-name-display"></span>
+                    </div>
+                </div>
+
+                <div class="ai-workspace" id="ai-workspace" style="display: none;">
+                    <!-- LEFT SIDE: FULL PANEL WITH GRID & RED 'X' DEFECT BADGES -->
+                    <div class="ai-panel-viewport">
+                        <div class="ai-panel-header">
+                            <h3><i class="fa-solid fa-microscope text-gold"></i> Interactive Panel View & Defect Locations (❌)</h3>
+                            <span class="ai-badge" id="ai-overall-badge">100% Healthy ✅</span>
+                        </div>
+                        <div class="ai-image-wrapper" id="ai-image-wrapper">
+                            <img id="ai-panel-img" src="" alt="AI Solar Panel Inspection" class="ai-panel-img">
+                            <div class="ai-grid-overlay" id="ai-grid-overlay"></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE: AI CELL NAVIGATION & ENGINEERING METADATA -->
+                    <div class="ai-info-sidebar">
+                        
+                        <!-- AI STATS SUMMARY CARD -->
+                        <div class="ai-summary-card">
+                            <h4><i class="fa-solid fa-chart-pie text-blue"></i> AI Inspection Summary</h4>
+                            <div class="ai-stats-row">
+                                <div class="stat-box">
+                                    <span class="stat-lbl">Total Cells:</span>
+                                    <strong id="ai-stat-total">144</strong>
+                                </div>
+                                <div class="stat-box text-green">
+                                    <span class="stat-lbl">Healthy Cells:</span>
+                                    <strong id="ai-stat-healthy">0</strong>
+                                </div>
+                                <div class="stat-box text-red">
+                                    <span class="stat-lbl">Defective Cells:</span>
+                                    <strong id="ai-stat-defective">0</strong>
+                                </div>
+                                <div class="stat-box text-gold">
+                                    <span class="stat-lbl">Health Rate:</span>
+                                    <strong id="ai-stat-rate">0%</strong>
+                                </div>
+                                <div class="stat-box" style="grid-column: span 2;">
+                                    <span class="stat-lbl"><i class="fa-solid fa-stopwatch text-gold"></i> Processing Latency (Arrival -> Display):</span>
+                                    <strong id="ai-stat-time" style="color: var(--accent-blue); font-size: 16px;">-- ms</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEPPER 1: ALL 144 CELLS NAVIGATION -->
+                        <div class="ai-stepper-card">
+                            <div class="stepper-title">
+                                <h5><i class="fa-solid fa-table-cells text-blue"></i> 1. Browse All Cells (144 Cells)</h5>
+                            </div>
+                            <div class="stepper-body">
+                                <button class="stepper-btn" id="btn-all-prev" title="Previous Cell"><i class="fa-solid fa-chevron-left"></i></button>
+                                <div class="stepper-cell-box">
+                                    <img id="ai-all-img" src="" alt="Cell Preview" class="stepper-cell-img">
+                                    <div class="stepper-info">
+                                        <span class="cell-tag" id="ai-all-id">A1</span>
+                                        <span class="status-badge" id="ai-all-badge">Healthy ✅</span>
+                                        <span class="conf-badge" id="ai-all-conf">99.8%</span>
+                                    </div>
+                                </div>
+                                <button class="stepper-btn" id="btn-all-next" title="Next Cell"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- STEPPER 2: DEFECTIVE CELLS NAVIGATION ONLY -->
+                        <div class="ai-stepper-card card-defective">
+                            <div class="stepper-title">
+                                <h5><i class="fa-solid fa-triangle-exclamation text-red"></i> 2. Browse Defective Cells Only</h5>
+                            </div>
+                            <div class="stepper-body" id="ai-def-body">
+                                <button class="stepper-btn" id="btn-def-prev" title="Previous Defective Cell"><i class="fa-solid fa-chevron-left"></i></button>
+                                <div class="stepper-cell-box">
+                                    <img id="ai-def-img" src="" alt="Defective Cell Preview" class="stepper-cell-img">
+                                    <div class="stepper-info">
+                                        <span class="cell-tag tag-red" id="ai-def-id">-</span>
+                                        <span class="status-badge badge-red" id="ai-def-badge">Defective ❌</span>
+                                        <span class="conf-badge" id="ai-def-conf">-</span>
+                                    </div>
+                                </div>
+                                <button class="stepper-btn" id="btn-def-next" title="Next Defective Cell"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                            <div class="no-defects-msg" id="ai-no-defects-msg" style="display: none;">
+                                ✅ No defective cells found in this panel (100% Healthy)
+                            </div>
+                        </div>
+
+                        <!-- STEPPER 3: HEALTHY CELLS NAVIGATION ONLY -->
+                        <div class="ai-stepper-card card-healthy">
+                            <div class="stepper-title">
+                                <h5><i class="fa-solid fa-circle-check text-green"></i> 3. Browse Healthy Cells Only</h5>
+                            </div>
+                            <div class="stepper-body">
+                                <button class="stepper-btn" id="btn-hea-prev" title="Previous Healthy Cell"><i class="fa-solid fa-chevron-left"></i></button>
+                                <div class="stepper-cell-box">
+                                    <img id="ai-hea-img" src="" alt="Healthy Cell Preview" class="stepper-cell-img">
+                                    <div class="stepper-info">
+                                        <span class="cell-tag tag-green" id="ai-hea-id">A1</span>
+                                        <span class="status-badge badge-green" id="ai-hea-badge">Healthy ✅</span>
+                                        <span class="conf-badge" id="ai-hea-conf">99.8%</span>
+                                    </div>
+                                </div>
+                                <button class="stepper-btn" id="btn-hea-next" title="Next Healthy Cell"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- PANEL ENGINEERING METADATA CARD -->
+                        <div class="ai-meta-card">
+                            <h4><i class="fa-solid fa-ruler-combined text-gold"></i> Panel Geometric Calculations</h4>
+                            <div class="meta-list">
+                                <div class="meta-item"><span class="lbl">process_tif Processing:</span> <strong class="text-green">Yes (Active)</strong></div>
+                                <div class="meta-item"><span class="lbl">Original Dimensions:</span> <strong id="ai-meta-orig">0 × 0 px</strong></div>
+                                <div class="meta-item"><span class="lbl">Model Dimensions (2:1):</span> <strong id="ai-meta-model">0 × 0 px</strong></div>
+                                <div class="meta-item"><span class="lbl">Padded Dimensions:</span> <strong id="ai-meta-padded">0 × 0 px</strong></div>
+                                <div class="meta-item"><span class="lbl">Cell Width (CH):</span> <strong id="ai-meta-ch">0 px</strong></div>
+                                <div class="meta-item"><span class="lbl">Cell Height (CW):</span> <strong id="ai-meta-cw">0 px</strong></div>
+                                <div class="meta-item"><span class="lbl">Square Side (SL):</span> <strong id="ai-meta-sl">0 px</strong></div>
+                                <div class="meta-item"><span class="lbl">Processing Latency:</span> <strong id="ai-meta-time" style="color: var(--accent-blue);">-- ms</strong></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE 4: BALANCED GOOD CELLS FILTER (3168 & not good) -->
+            <div class="mode-container" id="good-sorter-mode-container" style="display: none;">
+                <div class="good-sorter-workspace">
+                    
+                    <!-- Top Input Bar -->
+                    <div class="good-sorter-top-bar">
+                        <div class="good-sorter-input-group">
+                            <label for="good-sorter-path"><i class="fa-solid fa-folder-open"></i> Path to <strong>all good cells</strong> folder to balance 3168 healthy cells (22 cells per position):</label>
+                            <div class="good-input-row">
+                                <input type="text" id="good-sorter-path" placeholder="Enter path to all good cells folder (e.g. /Users/.../Restructured/all good cells)" class="text-input">
+                                <button class="btn btn-success" id="btn-load-good-sorter">
+                                    <i class="fa-solid fa-scale-balanced"></i> Start Balanced Sorter (3168)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Good Sorter Dashboard -->
+                    <div class="good-sorter-dashboard" id="good-sorter-dashboard" style="display: none;">
+                        
+                        <!-- Header Stats & Positional Progress Bar -->
+                        <div class="good-progress-header-card">
+                            <div class="pos-badge-large" id="good-active-pos-badge">Current Position: A1 (1 of 144)</div>
+                            <div class="pos-counters-group">
+                                <div class="pos-stat-box">
+                                    <span class="lbl">Accepted for this Position (Target: 22):</span>
+                                    <span class="val text-green" id="good-pos-accepted-count">0 / 22</span>
+                                </div>
+                                <div class="pos-stat-box">
+                                    <span class="lbl">Total Accepted (Target: 3168):</span>
+                                    <span class="val text-blue" id="good-total-accepted-count">0 / 3168</span>
+                                </div>
+                                <div class="pos-stat-box">
+                                    <span class="lbl">Rejected (not good/):</span>
+                                    <span class="val text-red" id="good-total-rejected-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Central Split View -->
+                        <div class="good-sorter-main-split">
+                            
+                            <!-- LEFT: Center Image Viewer & Decision Controls -->
+                            <div class="good-image-viewer-card">
+                                <div class="viewer-header">
+                                    <span class="cell-info-txt" id="good-cell-filename-txt">2026-01-07_12-59-28-A1.png</span>
+                                    <span class="folder-status-tag" id="good-cell-folder-tag">all good cells/</span>
+                                </div>
+
+                                <div class="good-image-viewport">
+                                    <button class="good-nav-arrow" id="btn-good-prev" title="Previous Cell"><i class="fa-solid fa-chevron-left"></i></button>
+                                    
+                                    <div class="good-frame-box">
+                                        <img id="good-cell-img" src="" alt="Good Cell Preview" class="good-cell-img">
+                                        <div class="good-img-badge" id="good-img-badge">A1</div>
+                                        <div class="good-loader" id="good-img-loader" style="display: none;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+                                    </div>
+
+                                    <button class="good-nav-arrow" id="btn-good-next" title="Next Cell"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+
+                                <!-- Decision Action Buttons -->
+                                <div class="good-decision-actions-row">
+                                    <button class="btn-decision btn-accept" id="btn-good-accept">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        <span>Accept (Move to 3168/)</span>
+                                        <kbd>1 or Enter</kbd>
+                                    </button>
+                                    
+                                    <button class="btn-decision btn-reject" id="btn-good-reject">
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                        <span>Reject (Move to not good/)</span>
+                                        <kbd>2 or Backspace</kbd>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT: 144 Position Map Progress Grid -->
+                            <div class="good-position-map-card">
+                                <div class="map-header">
+                                    <h3><i class="fa-solid fa-map"></i> 144 Cell Position Progress Map (A1 - F24)</h3>
+                                    <span class="map-hint">Turns green once 22 cells are collected</span>
+                                </div>
+
+                                <div class="position-map-grid" id="position-map-grid"></div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- MODE 3: BAD CELLS CLASSIFIER & SORTER -->
+            <div class="mode-container" id="sorter-mode-container" style="display: none;">
+                <div class="sorter-workspace">
+                    <div class="sorter-top-bar">
+                        <div class="sorter-input-container">
+                            <label for="sorter-folder-path"><i class="fa-solid fa-folder-open"></i> Path to <strong>all bad cells</strong> folder to classify defect types:</label>
+                            <div class="sorter-input-row">
+                                <input type="text" id="sorter-folder-path" placeholder="Enter path to all bad cells folder (e.g. /Users/.../Restructured/all bad cells)" class="text-input">
+                                <button class="btn btn-primary" id="btn-load-sorter"><i class="fa-solid fa-rocket"></i> Load Sorter</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sorter-dashboard" id="sorter-dashboard" style="display: none;">
+                        <div class="sorter-corner-card sorter-top-right">
+                            <div class="card-icon"><i class="fa-solid fa-circle-info text-blue"></i></div>
+                            <div class="card-content">
+                                <h4>Current Cell Information</h4>
+                                <div class="info-item"><span class="lbl">Panel Name:</span> <strong id="sorter-info-panel">-</strong></div>
+                                <div class="info-item"><span class="lbl">Cell Position:</span> <strong id="sorter-info-cell" class="cell-tag-highlight">-</strong></div>
+                                <div class="info-item"><span class="lbl">Current Folder:</span> <span id="sorter-info-folder" class="folder-tag">-</span></div>
+                            </div>
+                        </div>
+
+                        <div class="sorter-corner-card sorter-top-left">
+                            <div class="card-icon"><i class="fa-solid fa-chart-pie text-green"></i></div>
+                            <div class="card-content">
+                                <h4>Sorting Progress & Statistics</h4>
+                                <div class="info-item"><span class="lbl">Sorted Cells:</span> <strong id="sorter-stat-sorted" class="text-green">0</strong></div>
+                                <div class="info-item"><span class="lbl">Total Cells:</span> <strong id="sorter-stat-total">0</strong></div>
+                                <div class="info-item"><span class="lbl">Remaining:</span> <strong id="sorter-stat-remaining" class="text-gold">0</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="sorter-center-viewport">
+                            <button class="sorter-nav-arrow sorter-prev-arrow" id="btn-sorter-prev" title="Previous Cell"><i class="fa-solid fa-chevron-left"></i> <span>Previous Cell</span></button>
+                            <div class="sorter-image-frame">
+                                <img id="sorter-cell-img" src="" alt="Defect Cell Preview" class="sorter-img">
+                                <div class="sorter-img-badge" id="sorter-img-badge">Cell 1 of 0</div>
+                                <div class="sorter-loader" id="sorter-img-loader" style="display: none;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+                            </div>
+                            <button class="sorter-nav-arrow sorter-next-arrow" id="btn-sorter-next" title="Next Cell"><span>Next Cell</span> <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="sorter-categories-row">
+                            <div class="category-btn-wrapper"><button class="btn-category cat-cracks" data-cat="Cracks"><i class="fa-solid fa-bolt-lightning"></i> <span>Cracks</span> <kbd>1</kbd></button><div class="category-counter" id="cnt-Cracks">0 images</div></div>
+                            <div class="category-btn-wrapper"><button class="btn-category cat-ribbons" data-cat="Ribbons"><i class="fa-solid fa-grip-lines-vertical"></i> <span>Ribbons</span> <kbd>2</kbd></button><div class="category-counter" id="cnt-Ribbons">0 images</div></div>
+                            <div class="category-btn-wrapper"><button class="btn-category cat-misalignment" data-cat="Misalignment"><i class="fa-solid fa-arrows-rotate"></i> <span>Misalignment</span> <kbd>3</kbd></button><div class="category-counter" id="cnt-Misalignment">0 images</div></div>
+                            <div class="category-btn-wrapper"><button class="btn-category cat-impurity" data-cat="Impurity"><i class="fa-solid fa-bahai"></i> <span>Impurity</span> <kbd>4</kbd></button><div class="category-counter" id="cnt-Impurity">0 images</div></div>
+                            <div class="category-btn-wrapper"><button class="btn-category cat-missing" data-cat="Missing"><i class="fa-solid fa-square-minus"></i> <span>Missing</span> <kbd>5</kbd></button><div class="category-counter" id="cnt-Missing">0 images</div></div>
+                            <div class="category-btn-wrapper"><button class="btn-category cat-other" data-cat="other"><i class="fa-solid fa-cubes-stacked"></i> <span>other</span> <kbd>6</kbd></button><div class="category-counter" id="cnt-other">0 images</div></div>
+                        </div>
+
+                        <div class="sorter-bottom-quote sorter-bottom-right"><i class="fa-solid fa-quote-right text-gold"></i> <span>Trust the process and stay focused</span></div>
+                        <div class="sorter-bottom-quote sorter-bottom-left"><i class="fa-solid fa-fire text-blue"></i> <span>Keep going</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- BAD PANELS INSPECTOR MODAL -->
+        <div class="modal-overlay" id="bad-panels-modal" style="display: none;">
+            <div class="modal-card bad-panels-modal-card">
+                <div class="modal-header">
+                    <div class="modal-title"><i class="fa-solid fa-triangle-exclamation text-red"></i> <h2>Bad Panels Inspector</h2></div>
+                    <div class="modal-header-actions">
+                        <span class="panel-nav-counter" id="bad-panel-counter">Panel 1 of 30</span>
+                        <select id="bad-panel-dropdown" class="panel-dropdown-select"></select>
+                        <button class="modal-close-btn" id="btn-close-bad-modal">&times;</button>
+                    </div>
+                </div>
+                <div class="modal-body bad-panels-modal-body">
+                    <div class="modal-col info-bad-cells-col">
+                        <div class="bad-panel-info-card">
+                            <div class="info-card-header"><h3 id="bad-panel-name-heading">Panel: 2026-01-07_12-59-28</h3><span class="status-badge status-fail" id="bad-panel-status-tag">FAIL (Defective)</span></div>
+                            <div class="json-metadata-list" id="bad-panel-json-details">
+                                <div class="json-row"><span class="json-key">Serial Number:</span> <span class="json-val" id="json-serial">-</span></div>
+                                <div class="json-row"><span class="json-key">Date & Time:</span> <span class="json-val" id="json-timestamp">-</span></div>
+                                <div class="json-row"><span class="json-key">Recorded Defects:</span> <div class="defects-tags-list" id="json-defects-list"></div></div>
+                            </div>
+                        </div>
+                        <div class="bad-cells-preview-section">
+                            <h3><i class="fa-solid fa-circle-exclamation text-gold"></i> Sliced Defective Cells (bad cells/)</h3>
+                            <div class="bad-cells-grid" id="bad-cells-grid"></div>
+                        </div>
+                    </div>
+                    <div class="modal-col panel-image-col">
+                        <div class="full-panel-modal-card">
+                            <h3><i class="fa-solid fa-image"></i> Full Panel Image (.tif)</h3>
+                            <div class="modal-panel-viewport">
+                                <img id="modal-full-panel-img" src="" alt="Full Defective Panel" class="modal-panel-img">
+                                <div class="modal-loader" id="modal-panel-loader" style="display: none;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-prev-bad-panel"><i class="fa-solid fa-chevron-left"></i> Previous Panel</button>
+                    <span class="footer-hint">Use arrow buttons or dropdown to switch between defective panels</span>
+                    <button class="btn btn-primary" id="btn-next-bad-panel">Next Panel <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATIVE CELEBRATION MODAL -->
+        <div class="modal-overlay" id="celebration-modal" style="display: none;">
+            <div class="modal-card celebration-card">
+                <div class="celebration-content">
+                    <div class="trophy-icon-wrapper"><i class="fa-solid fa-trophy text-gold fa-beat"></i></div>
+                    <h2 class="celebration-title">🎉 Congratulations! 100% of cells have been sorted successfully!</h2>
+                    <p class="celebration-subtitle">You have demonstrated exceptional dedication in building and preparing high-quality AI training datasets.</p>
+                    <div class="final-stats-box">
+                        <h3><i class="fa-solid fa-chart-bar"></i> Final Statistics for Defect Category Distribution:</h3>
+                        <div class="final-stats-grid" id="final-stats-grid"></div>
+                    </div>
+                    <div class="dev-tribute-card">
+                        <div class="tribute-badge"><i class="fa-solid fa-star"></i> Milestone Achieved</div>
+                        <p class="tribute-quote">"Great achievements in AI come from precision, continuous passion, and trusting the process and plan. You are building a model that lights up the future!"</p>
+                        <div class="author-signature">🚀 Keep building and innovating!</div>
+                    </div>
+                    <button class="btn btn-primary btn-large" id="btn-close-celebration"><i class="fa-solid fa-circle-check"></i> Close & Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Loading Overlay -->
+        <div class="global-loading-overlay" id="loading-overlay" style="display: none;">
+            <div class="spinner-card">
+                <i class="fa-solid fa-gear fa-spin fa-3x"></i>
+                <p id="loading-msg">Processing and cropping images, aggregating datasets...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/static/operator_manager.js?v=5.4.0"></script>
+    <script src="/static/app.js?v=5.4.0"></script>
+</body>
+</html>

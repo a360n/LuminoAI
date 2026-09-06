@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audited Panels Registry - LuminoAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Reference Quality Auditing & Model Adjudication</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain"></i> AI Panel Inspection
+                </a>
+                <a href="/aipath" class="tab-btn">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitoring (AI Path)
+                </a>
+                <a href="/audit" class="tab-btn active">
+                    <i class="fa-solid fa-clipboard-check"></i> Audited Panels (Registry)
+                </a>
+                <a href="/settings" class="tab-btn">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+
+                <button class="btn btn-secondary" id="btn-refresh-audit">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main" style="padding: 28px 24px; max-width: 1440px; margin: 0 auto; width: 100%;">
+            
+            <!-- Page Header / HUD -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+                <div>
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-chart-line text-blue"></i> Quality Audit & Calibration Registry
+                    </h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">
+                        Ground-truth adjudication ledger evaluating AI model precision vs operator detection.
+                    </p>
+                </div>
+                <div class="hud-chip">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span id="audit-last-updated" style="font-size: 12px; color: var(--text-muted);">Syncing...</span>
+                </div>
+            </div>
+
+            <!-- 1. UNIFIED EXECUTIVE SCOREBOARD (ZERO SHARP BOX CLUTTER) -->
+            <div class="audit-executive-board" id="global-stats-grid">
+                
+                <!-- Top Row: 4 Main KPIs with delicate dividers -->
+                <div class="audit-kpi-row">
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-solar-panel text-blue"></i> Total Audited</span>
+                        <div class="kpi-number" id="stat-total-audited">0</div>
+                        <span class="kpi-desc">Certified Photovoltaic Modules</span>
+                    </div>
+
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-handshake text-green"></i> Full Concordance</span>
+                        <div class="kpi-number text-green" id="stat-match-rate">--%</div>
+                        <span class="kpi-desc">AI & Machine EL Complete Parity</span>
+                    </div>
+
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-brain text-gold"></i> AI Precision</span>
+                        <div class="kpi-number text-gold" id="stat-ai-accuracy">--%</div>
+                        <span class="kpi-desc">EfficientNet-B0 Detection Rate</span>
+                    </div>
+
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-user-check" style="color: var(--accent-purple);"></i> Operator Accuracy</span>
+                        <div class="kpi-number" id="stat-human-accuracy" style="color: var(--accent-purple);">--%</div>
+                        <span class="kpi-desc">Human Inspection Precision</span>
+                    </div>
+                </div>
+
+                <!-- Bottom Row: Integrated Telemetry Pill Strip -->
+                <div class="audit-cases-strip">
+                    <div class="audit-cases-title">
+                        <i class="fa-solid fa-microscope text-blue"></i> Adjudication Cases:
+                    </div>
+                    <div class="audit-cases-chips">
+                        <div class="audit-case-pill case-1" title="Defects missed by AI, reducing AI detection accuracy">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>AI Missed:</span>
+                            <span class="count" id="stat-case1-missed">0</span>
+                        </div>
+                        <div class="audit-case-pill case-2" title="False defect alarms flagged by AI">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>AI False Alarm:</span>
+                            <span class="count" id="stat-case2-false">0</span>
+                        </div>
+                        <div class="audit-case-pill case-3" title="False defect alarms marked by human in EL file">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            <span>Op False Alarm:</span>
+                            <span class="count" id="stat-case3-false">0</span>
+                        </div>
+                        <div class="audit-case-pill case-4" title="Defects missed by operator that AI correctly detected">
+                            <i class="fa-solid fa-trophy text-gold"></i>
+                            <span>AI Outperformed:</span>
+                            <span class="count" id="stat-case4-missed">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 2. SMOOTH FILTER & SEARCH CONTROLS -->
+            <div class="audit-filter-toolbar">
+                <div class="audit-search-box">
+                    <input type="text" id="audit-search-input" class="text-input" placeholder="🔍 Instant search by filename, barcode, or inspector..." style="width: 100%; padding: 10px 20px; border-radius: 9999px; background: var(--bg-surface); border: 1px solid var(--card-border); color: var(--text-main); font-size: 13px;">
+                </div>
+                <div class="audit-filter-pill-group" id="audit-filter-buttons">
+                    <button class="filter-pill-btn active" data-filter="all">All Records</button>
+                    <button class="filter-pill-btn" data-filter="matched">✅ Full Match</button>
+                    <button class="filter-pill-btn" data-filter="mismatched">⚠️ Discrepancies</button>
+                    <button class="filter-pill-btn" data-filter="case_1">❌ AI Missed</button>
+                    <button class="filter-pill-btn" data-filter="case_2">⚠️ AI False</button>
+                    <button class="filter-pill-btn" data-filter="case_3">⚠️ Op False</button>
+                    <button class="filter-pill-btn" data-filter="case_4">⭐ AI Won</button>
+                </div>
+            </div>
+
+            <!-- 3. AUDITED PANELS STREAM -->
+            <div class="card" style="border-radius: 22px; padding: 24px; background: var(--bg-card); border: 1px solid var(--card-border); box-shadow: var(--card-shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; margin-bottom: 18px;">
+                    <h3 style="font-size: 16px; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-list-check text-blue"></i> Audited Panels Stream
+                        <span class="badge" id="audit-count-badge" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; font-size: 12px; border-radius: 9999px; padding: 2px 10px;">0</span>
+                    </h3>
+                </div>
+
+                <div id="audit-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x text-blue"></i>
+                        <p style="margin-top: 12px;">Loading audited panels registry...</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Detailed Modal for Audited Panel -->
+        <div class="global-loading-overlay" id="audit-detail-modal" style="display: none; align-items: center; justify-content: center; z-index: 9999; background: var(--modal-backdrop); backdrop-filter: blur(12px);">
+            <div class="card" style="max-width: 960px; width: 92%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 24px; padding: 28px; position: relative; box-shadow: var(--card-shadow);">
+                
+                <button id="btn-close-audit-modal" style="position: absolute; top: 22px; right: 22px; background: var(--bg-elevated); border: 1px solid var(--card-border); width: 36px; height: 36px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <!-- Modal Header -->
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px;">
+                    <div class="logo-icon" style="width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe;">
+                        <i class="fa-solid fa-microscope text-blue fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 800;" id="modal-panel-title">Panel Audit & Inspection Details</h3>
+                        <div style="font-size: 12px; margin-top: 3px;" id="modal-panel-subtitle">--</div>
+                    </div>
+                </div>
+
+                <!-- Match Status Banner -->
+                <div id="modal-match-banner" style="padding: 14px 20px; border-radius: 16px; margin-bottom: 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: space-between;">
+                    <span id="modal-match-text">--</span>
+                    <span id="modal-match-badge" class="badge" style="border-radius: 9999px; padding: 4px 14px;">--</span>
+                </div>
+
+                <!-- 4 Cases Diagnosis Checklist Grid -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 22px;">
+                    
+                    <div style="background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">1. AI Missed Defect</span>
+                        <div id="modal-diag-case1" style="font-size: 13px; font-weight: 600;">No</div>
+                    </div>
+
+                    <div style="background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">2. AI False Alarm</span>
+                        <div id="modal-diag-case2" style="font-size: 13px; font-weight: 600;">No</div>
+                    </div>
+
+                    <div style="background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">3. Operator False Alarm</span>
+                        <div id="modal-diag-case3" style="font-size: 13px; font-weight: 600;">No</div>
+                    </div>
+
+                    <div style="background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">4. AI Outperformed Operator</span>
+                        <div id="modal-diag-case4" style="font-size: 13px; font-weight: 600;">No</div>
+                    </div>
+
+                </div>
+
+                <!-- Confirmed Defective Cells List -->
+                <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 16px; padding: 16px 20px; margin-bottom: 22px;">
+                    <h5 style="margin: 0 0 10px 0; color: var(--accent-red); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;"><i class="fa-solid fa-circle-xmark me-1"></i> Ground Truth Confirmed Defective Cells:</h5>
+                    <div id="modal-confirmed-defects-tags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">--</span>
+                    </div>
+                </div>
+
+                <!-- Disputed Cells Detailed Table -->
+                <div style="margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-scale-balanced text-blue me-1"></i> Disputed Cells Adjudication Table:</h5>
+                    <div id="modal-disputes-table-container" style="overflow-x: auto; border-radius: 16px; border: 1px solid var(--card-border);">
+                        <!-- Table rendered dynamically -->
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 14px;">
+                    <button class="btn btn-secondary" id="btn-close-modal-bottom" style="border-radius: 9999px; padding: 8px 24px;">Close</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/static/operator_manager.js?v=5.4.0"></script>
+    <script src="/static/audit.js?v=5.4.0"></script>
+</body>
+</html>

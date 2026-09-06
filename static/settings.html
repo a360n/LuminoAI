@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminoAI - System Settings & Factory Branding</title>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <!-- Dynamic Theme & Branding Manager (Executes early to prevent FOUC) -->
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+    
+    <style>
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        @media (max-width: 900px) {
+            .settings-grid { grid-template-columns: 1fr; }
+        }
+        .settings-nav {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: fit-content;
+            box-shadow: var(--card-shadow);
+        }
+        .settings-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .settings-nav-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-elevated);
+        }
+        .settings-nav-btn.active {
+            color: var(--brand-primary-1);
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            font-weight: 700;
+        }
+        .operator-table-wrapper {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            background: #ffffff;
+        }
+        .operator-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        .operator-table th {
+            padding: 12px 18px;
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .operator-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: var(--text-main);
+        }
+        .operator-table tr:hover td {
+            background: #f8fafc;
+        }
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--brand-primary-1);
+            font-size: 13px;
+        }
+
+        /* Navbar Mockup Preview */
+        .navbar-mockup {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        <!-- Top App Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Operator Administration, Factory Branding & System Configuration</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain text-gold"></i> AI Solar Inspection
+                </a>
+                <a href="/aipath" class="tab-btn">
+                    <i class="fa-solid fa-satellite-dish text-gold"></i> Live Watcher (AI Path)
+                </a>
+                <a href="/audit" class="tab-btn">
+                    <i class="fa-solid fa-clipboard-check text-gold"></i> Audited Panels (Registry)
+                </a>
+                <a href="/settings" class="tab-btn active">
+                    <i class="fa-solid fa-gear text-gold"></i> Settings
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple text-gold"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main" style="padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%;">
+            
+            <!-- Page Title Card -->
+            <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--card-shadow);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 42px; height: 42px; border-radius: 14px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: var(--brand-primary-1); font-size: 18px;">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: var(--text-main);">Settings & Identity</h2>
+                        <p style="margin: 2px 0 0 0; color: var(--text-muted); font-size: 13px;">Manage inspection line operators and customize factory branding</p>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-secondary btn-sm" id="btn-refresh-operators">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <!-- Sidebar Nav -->
+                <aside class="settings-nav">
+                    <button class="settings-nav-btn active" data-tab="operators">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>Operators Roster</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="branding">
+                        <i class="fa-solid fa-industry"></i>
+                        <span>Factory Identity & Logo</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="system-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>System Information</span>
+                    </button>
+                </aside>
+
+                <!-- Settings Content Area -->
+                <section class="settings-content">
+                    
+                    <!-- TAB 1: OPERATOR MANAGEMENT -->
+                    <div id="tab-pane-operators" style="display: block;">
+                        
+                        <!-- Top KPI Stats Row -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-users me-1" style="color: var(--brand-primary-1);"></i> Total Operators</div>
+                                <div id="stat-total-operators" style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-top: 6px; font-family: var(--font-mono);">0</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-user-check me-1" style="color: var(--brand-secondary-2);"></i> Active Operator</div>
+                                <div id="stat-active-operator" style="font-size: 20px; font-weight: 800; color: var(--brand-secondary-2); margin-top: 8px;">--</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-clipboard-check me-1" style="color: var(--brand-primary-1);"></i> Audited Panels</div>
+                                <div id="stat-total-audited-panels" style="font-size: 28px; font-weight: 800; color: var(--brand-primary-1); margin-top: 6px; font-family: var(--font-mono);">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Add Operator Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-user-plus" style="color: var(--brand-primary-1);"></i> Add Operator
+                            </div>
+                            <form id="form-add-operator" style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end;">
+                                <div style="flex: 2; min-width: 200px;">
+                                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Operator Name / ID *</label>
+                                    <input type="text" id="input-operator-name" class="text-input" placeholder="e.g. Ali Al-Khazali" required style="width: 100%; padding: 11px 16px; border-radius: 12px;">
+                                </div>
+                                <div style="flex: 1.5; min-width: 180px;">
+                                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Role / Designation</label>
+                                    <select id="select-operator-role" class="text-input" style="width: 100%; padding: 11px 16px; border-radius: 12px;">
+                                        <option value="Line Inspector">Line Inspector</option>
+                                        <option value="Shift Supervisor">Shift Supervisor</option>
+                                        <option value="Quality Assurance (QA)">Quality Assurance (QA)</option>
+                                        <option value="Solar PV Engineer">Solar PV Engineer</option>
+                                        <option value="Maintenance Technician">Maintenance Technician</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary" id="btn-submit-add-op">
+                                        <i class="fa-solid fa-plus"></i>
+                                        <span>Add Operator</span>
+                                    </button>
+                                </div>
+                            </form>
+                            <div id="add-operator-feedback" style="display: none; margin-top: 12px; font-size: 13px; font-weight: 600;"></div>
+                        </div>
+
+                        <!-- Operators List Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; box-shadow: var(--card-shadow);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                                <div style="font-size: 16px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-address-book" style="color: var(--brand-primary-1);"></i> Operators Directory
+                                </div>
+                                <div style="width: 260px;">
+                                    <input type="text" id="search-operator-input" placeholder="Search operators..." style="width: 100%; padding: 9px 16px; border-radius: 9999px; background: #ffffff; border: 1px solid var(--card-border); color: var(--text-main); font-size: 13px;">
+                                </div>
+                            </div>
+
+                            <div class="operator-table-wrapper">
+                                <table class="operator-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Operator</th>
+                                            <th>Role</th>
+                                            <th>Registration Date</th>
+                                            <th>Audited Panels</th>
+                                            <th>Current Status</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="operators-table-body">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                                <i class="fa-solid fa-spinner fa-spin me-2"></i> Loading operators list...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 2: FACTORY IDENTITY & LOGO -->
+                    <div id="tab-pane-branding" style="display: none;">
+                        
+                        <!-- Factory Identity Name Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-industry" style="color: var(--brand-primary-1);"></i> Factory Identity
+                            </div>
+                            <div style="max-width: 560px;">
+                                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Factory / Enterprise Name</label>
+                                <input type="text" id="input-factory-name" class="text-input" placeholder="e.g. LuminoAI Solar Gigafactory" style="width: 100%; padding: 11px 16px; border-radius: 12px;">
+                            </div>
+                        </div>
+
+                        <!-- Factory Logo Uploader Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                                <div style="font-size: 16px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-image" style="color: var(--brand-primary-1);"></i> Factory Logo & Auto-Scaler
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-default-logo">
+                                    <i class="fa-solid fa-earth-americas text-muted"></i>
+                                    <span>Reset to Default Logo</span>
+                                </button>
+                            </div>
+
+                            <!-- Upload Area & Live Navbar Mockup -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: center;">
+                                <div id="logo-dropzone" style="border: 2px dashed #cbd5e1; border-radius: 20px; padding: 32px 20px; text-align: center; background: var(--bg-elevated); cursor: pointer; transition: all 0.2s ease;">
+                                    <i class="fa-solid fa-cloud-arrow-up fa-2x text-muted" style="margin-bottom: 12px;"></i>
+                                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: var(--text-main);">Click or Drag & Drop Factory Logo</h4>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">PNG, JPG, SVG, WebP (Auto-scaled to header)</p>
+                                    <input type="file" id="input-factory-logo" accept="image/*" style="display: none;">
+                                </div>
+
+                                <!-- Live Navbar Mockup Preview -->
+                                <div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+                                        <i class="fa-solid fa-eye text-blue me-1"></i> Live Header Preview:
+                                    </div>
+                                    <div class="navbar-mockup">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <div class="brand-logo-container" id="preview-logo-container">
+                                                <img src="/static/default_globe_logo.svg?v=1" alt="Logo Preview" id="preview-logo-img" class="brand-logo-img">
+                                            </div>
+                                            <div>
+                                                <div id="preview-factory-title" style="font-size: 14px; font-weight: 800; color: var(--text-main);">LuminoAI Solar Gigafactory</div>
+                                                <div style="font-size: 11px; color: var(--text-muted);">Solar PV Inspection</div>
+                                            </div>
+                                        </div>
+                                        <span class="badge" id="preview-logo-badge" style="background: #eff6ff; border: 1px solid #bfdbfe; color: var(--brand-primary-1); font-size: 11px; border-radius: 9999px; padding: 4px 10px;">
+                                            Auto-Scaled (42px)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons Row -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="btn btn-primary" id="btn-save-branding">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    <span>Save & Apply Identity</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-reset-all-branding">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span>Reset to Default</span>
+                                </button>
+                            </div>
+                            <div id="branding-feedback" style="display: none;"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 3: SYSTEM INFORMATION -->
+                    <div id="tab-pane-system-info" style="display: none;">
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; box-shadow: var(--card-shadow);">
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-microchip" style="color: var(--brand-primary-1);"></i> System Specifications
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Neural Network Backbone</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--brand-primary-1); margin-top: 4px;">EfficientNet-B0 (PyTorch)</div>
+                                </div>
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Panel Matrix Geometry</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-top: 4px;">6 Rows x 24 Columns (144 Cells)</div>
+                                </div>
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Database Engine</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--brand-secondary-2); margin-top: 4px;">SQLite 3 (Audit & Operators)</div>
+                                </div>
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Factory Logo Engine</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--brand-secondary-1); margin-top: 4px;">Auto-Scaler with Default Globe</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/operator_manager.js?v=5.5.0"></script>
+    <script src="/static/settings.js?v=5.5.0"></script>
+</body>
+</html>

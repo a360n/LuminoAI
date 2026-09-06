@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+exported_cells/
+*.zip
+*.tif
+*.tiff
+.venv/
+venv/
+*.db
+build/
+publish_protected_release.command
+build_protected_pipeline.py
+encrypt_model.py
