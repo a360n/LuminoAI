@@ -1,0 +1,80 @@
+name: Build Windows Native Binaries
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: 'utf-8'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if C sources exist
+        id: check_c
+        shell: bash
+        run: |
+          count=$(find . -maxdepth 1 -name "*.c" | wc -l)
+          if [ "$count" -gt 0 ]; then
+            echo "has_c=true" >> "$GITHUB_OUTPUT"
+            echo "Found $count C source files to compile for Windows."
+          else
+            echo "has_c=false" >> "$GITHUB_OUTPUT"
+            echo "No C source files found."
+          fi
+
+      - name: Set up Python 3.12 (MSVC Toolchain)
+        if: steps.check_c.outputs.has_c == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Build Tools
+        if: steps.check_c.outputs.has_c == 'true'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel cython numpy
+
+      - name: Compile Windows .pyd C-Binaries
+        if: steps.check_c.outputs.has_c == 'true'
+        shell: bash
+        run: |
+          python setup_win.py 2>&1 | tee build_output.log || true
+          echo "### MSVC Build Summary (Python 3.12)" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          cat build_output.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          count=$(find . -maxdepth 1 -name "*.pyd" | wc -l)
+          echo "Generated $count .pyd binary files."
+          if [ "$count" -eq 0 ]; then
+            exit 1
+          fi
+
+      - name: Purge C Sources & Intermediate Artifacts
+        if: steps.check_c.outputs.has_c == 'true'
+        shell: bash
+        run: |
+          rm -f *.c
+          rm -rf build/
+          rm -f setup_win.py build_output.log
+
+      - name: Commit and Push Windows Binaries to Release
+        if: steps.check_c.outputs.has_c == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f *.pyd
+          git add -u
+          git commit -m "build(windows): auto-compiled native Windows .pyd binaries [skip ci]" || exit 0
+          git push origin main

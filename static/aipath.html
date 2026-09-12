@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Live Watcher (AI Path) - EL Cell Cropper</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Autonomous Production Folder Watcher & Live Adjudication</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain"></i> AI Panel Inspection
+                </a>
+                <a href="/aipath" class="tab-btn active">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitoring (AI Path)
+                </a>
+                <a href="/audit" class="tab-btn">
+                    <i class="fa-solid fa-clipboard-check"></i> Audited Panels (Registry)
+                </a>
+                <a href="/settings" class="tab-btn">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-workspace">
+            <div class="mode-container" id="aipath-mode-container" style="display: block; padding: 24px;">
+                <div class="aipath-workspace">
+                    
+                    <!-- 1. RADAR MONITORING STATION CARD -->
+                    <div class="radar-station-card">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="radar-sweep-icon">
+                                    <i class="fa-solid fa-satellite-dish fa-xs" style="color: var(--brand-primary-1);"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 17px; color: var(--text-main); margin: 0; font-weight: 700;">
+                                        Automated Production Folder Watcher (AI Path)
+                                    </h3>
+                                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                                        Persistent background directory watcher detecting incoming .TIF &amp; .EL files autonomously.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <a href="/settings#watcher" class="btn btn-secondary btn-sm" style="font-weight: 700;">
+                                    <i class="fa-solid fa-gear text-blue"></i>
+                                    <span>Configure in Settings</span>
+                                </a>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-aipath-status" title="Check folder status">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Watched Directory Bar -->
+                        <div id="aipath-folder-display-bar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 18px; background: var(--bg-surface); border: 1px solid var(--card-border); border-radius: 14px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 200px; flex: 1;">
+                                <i class="fa-solid fa-folder-open" style="color: var(--brand-primary-1); font-size: 16px;"></i>
+                                <span style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Monitored Directory:</span>
+                                <code id="aipath-active-folder-path" style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-main); word-break: break-all;">
+                                    Loading persistent path...
+                                </code>
+                            </div>
+                            <span id="aipath-status-chip" class="badge" style="background: #eff6ff; color: var(--brand-primary-1); border: 1px solid #bfdbfe; font-size: 12px; padding: 5px 12px; border-radius: 9999px; font-weight: 700;">
+                                <i class="fa-solid fa-spinner fa-spin me-1"></i> Initializing
+                            </span>
+                        </div>
+
+                        <!-- Warning Alert Banner (Visible when configured folder does NOT exist on disk) -->
+                        <div id="aipath-missing-alert" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 14px; padding: 16px 20px; margin-top: 14px; color: #ef4444;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 800; font-size: 14px; color: #dc2626;">⚠️ ALERT: Configured Production Folder Not Found!</div>
+                                        <div style="font-size: 12px; margin-top: 2px; color: #b91c1c;">
+                                            The directory path <code id="aipath-missing-path-display" style="font-family: var(--font-mono); font-weight: 700; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px;"></code> does not exist or is inaccessible. Please check your storage mount or update it in Settings.
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="/settings#watcher" class="btn btn-primary btn-sm" style="background: #ef4444; border-color: #ef4444;">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Update Path in Settings</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Prompt Banner (Visible when no folder has been configured yet) -->
+                        <div id="aipath-unconfigured-prompt" style="display: none; background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px 20px; margin-top: 14px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(0, 119, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--brand-primary-2);">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 14px; color: var(--text-main);">No Production Watcher Configured</div>
+                                        <div style="font-size: 12px; margin-top: 2px; color: var(--text-muted);">Configure your production directory in Settings to enable automated live TIF panel inspections.</div>
+                                    </div>
+                                </div>
+                                <a href="/settings#watcher" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-gear"></i>
+                                    <span>Configure Watcher in Settings</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Today's Live Production Inspection Counter (Auto-Resets Daily at 00:00:00) -->
+                        <div class="aipath-daily-counter-card" id="aipath-daily-counter-card">
+                            <div class="daily-counter-header">
+                                <div class="daily-counter-title">
+                                    <div class="daily-counter-badge-icon">
+                                        <i class="fa-solid fa-calendar-day"></i>
+                                    </div>
+                                    <h4>Today's Production Inspection Ledger (سجل فحص اليوم)</h4>
+                                    <span class="daily-date-pill" id="daily-stat-date">--</span>
+                                </div>
+                                <div class="daily-counter-meta">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                    <span>Resets daily at 00:00 (يتصفر تلقائياً مع بداية كل يوم جديد)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="daily-counter-grid">
+                                <!-- 1. Total Panels Inspected Today -->
+                                <div class="daily-kpi-item total">
+                                    <div class="daily-kpi-icon">
+                                        <i class="fa-solid fa-solar-panel"></i>
+                                    </div>
+                                    <div class="daily-kpi-text">
+                                        <span class="daily-kpi-lbl">Total Panels Inspected (إجمالي المفحوص اليوم)</span>
+                                        <div class="daily-kpi-num" id="daily-stat-total">0</div>
+                                    </div>
+                                </div>
+
+                                <!-- 2. Completely Clean / Healthy Panels -->
+                                <div class="daily-kpi-item healthy">
+                                    <div class="daily-kpi-icon">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </div>
+                                    <div class="daily-kpi-text">
+                                        <span class="daily-kpi-lbl">Completely Clean Panels (سليمة بالكامل)</span>
+                                        <div class="daily-kpi-num" id="daily-stat-healthy">0</div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Defective Panels -->
+                                <div class="daily-kpi-item defective">
+                                    <div class="daily-kpi-icon">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div class="daily-kpi-text">
+                                        <span class="daily-kpi-lbl">Defective Panels (تحتوي على عيوب)</span>
+                                        <div class="daily-kpi-num" id="daily-stat-defective">0</div>
+                                    </div>
+                                </div>
+
+                                <!-- 4. Quality Yield Rate -->
+                                <div class="daily-kpi-item rate">
+                                    <div class="daily-kpi-icon">
+                                        <i class="fa-solid fa-chart-pie"></i>
+                                    </div>
+                                    <div class="daily-kpi-text">
+                                        <span class="daily-kpi-lbl">Daily Quality Yield (معدل الجودة اليومي)</span>
+                                        <div class="daily-kpi-num" id="daily-stat-rate">100%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Status Banner & Filmstrip -->
+                        <div id="aipath-status-banner" style="display: none; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--card-border);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="pulse-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: var(--brand-secondary-2); box-shadow: 0 0 10px var(--brand-secondary-2); animation: pulse 1.5s infinite;"></div>
+                                    <h4 style="font-size: 13px; margin: 0; color: var(--text-main); font-weight: 700;" id="aipath-status-title">Live Monitoring Active</h4>
+                                    <span style="font-size: 12px; color: var(--text-muted);" id="aipath-status-detail">Waiting for new panel arrivals...</span>
+                                </div>
+                                
+                                <div id="aipath-history-container" style="display: none; align-items: center; gap: 10px;">
+                                    <span style="font-size: 12px; color: var(--text-muted);"><i class="fa-solid fa-history text-gold"></i> Shift History:</span>
+                                    <select id="aipath-history-select" class="text-input" style="padding: 6px 12px; background: var(--input-bg, rgba(0,0,0,0.4)); border: 1px solid var(--card-border); border-radius: 8px; color: var(--brand-primary-1); font-family: var(--font-mono); font-size: 12px; cursor: pointer;"></select>
+                                </div>
+                            </div>
+
+                            <!-- Real-Time Recent Panels Filmstrip -->
+                            <div class="recent-panels-strip" id="aipath-filmstrip" style="display: none;">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. TOP TELEMETRY HUD (Appears when first panel is analyzed) -->
+                    <div class="inspection-hud" id="aipath-inspection-hud" style="display: none;">
+                        <div class="hud-left">
+                            <div class="hud-chip">
+                                <i class="fa-solid fa-file-code"></i>
+                                <span id="aipath-current-filename" style="font-family: var(--font-mono); font-size: 13px; font-weight: 700;">--</span>
+                            </div>
+                            <span class="ai-badge" id="ai-overall-badge">Healthy 100% ✅</span>
+                        </div>
+
+                        <div class="hud-metrics-strip">
+                            <div class="hud-metric-item">
+                                <span class="lbl">Total Cells</span>
+                                <span class="val" id="ai-stat-total">144</span>
+                            </div>
+                            <div class="hud-metric-item healthy">
+                                <span class="lbl">Healthy</span>
+                                <span class="val" id="ai-stat-healthy">0</span>
+                            </div>
+                            <div class="hud-metric-item defective">
+                                <span class="lbl">Defective</span>
+                                <span class="val" id="ai-stat-defective">0</span>
+                            </div>
+                            <div class="hud-metric-item rate">
+                                <span class="lbl">Health Rate</span>
+                                <span class="val" id="ai-stat-rate">0%</span>
+                            </div>
+                            <div class="hud-metric-item time">
+                                <span class="lbl"><i class="fa-solid fa-stopwatch me-1"></i>Latency</span>
+                                <span class="val" id="ai-stat-time">-- ms</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. INDUSTRIAL WORKSPACE: SPLIT VIEWPORT & TABBED DOCK -->
+                    <div class="industrial-workspace-grid" id="ai-workspace" style="display: none;">
+                        
+                        <!-- LEFT VIEWPORT: INTERACTIVE PANEL & TOOLBAR -->
+                        <div class="panel-viewport-card">
+                            <div class="viewport-header">
+                                <div class="viewport-title">
+                                    <i class="fa-solid fa-microscope text-gold fa-lg"></i>
+                                    <h3>Live Panel Viewport & Defect Map (❌)</h3>
+                                </div>
+                                <div class="viewport-tools">
+                                    <button type="button" class="tool-btn" id="btn-rotate-panel" title="Rotate panel orientation 90 degrees">
+                                        <i class="fa-solid fa-rotate"></i> <span>Rotate 90°</span>
+                                    </button>
+                                    <button type="button" class="tool-btn active" id="btn-toggle-grid">
+                                        <i class="fa-solid fa-border-all"></i> <span>Grid</span>
+                                    </button>
+                                    <button type="button" class="tool-btn active" id="btn-toggle-markers">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> <span>Markers (❌)</span>
+                                    </button>
+                                    <button type="button" class="tool-btn" id="btn-toggle-focus" title="Toggle full-width inspection mode">
+                                        <i class="fa-solid fa-maximize"></i> <span>Focus</span>
+                                    </button>
+                                    <button type="button" class="tool-btn" id="btn-reset-view">
+                                        <i class="fa-solid fa-arrows-rotate"></i> <span>Reset Fit</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="panel-stage-container" id="ai-image-wrapper">
+                                <div class="panel-stage-inner" id="ai-stage-inner">
+                                    <img id="ai-panel-img" src="" alt="AI Solar Panel Inspection" class="panel-stage-img">
+                                    <div class="ai-grid-overlay" id="ai-grid-overlay"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT DOCK: TABBED INSPECTION CONSOLE -->
+                        <div class="inspection-dock">
+                            <!-- Dock Navigation Tabs -->
+                            <div class="dock-tabs-nav">
+                                <button type="button" class="dock-tab-btn active" data-dock-tab="dock-pane-defects">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <span>Defects & Audit</span>
+                                    <span class="dock-tab-badge" id="dock-defect-badge">0</span>
+                                </button>
+                                <button type="button" class="dock-tab-btn" data-dock-tab="dock-pane-el">
+                                    <i class="fa-solid fa-file-invoice"></i>
+                                    <span>Machine EL</span>
+                                </button>
+                                <button type="button" class="dock-tab-btn" data-dock-tab="dock-pane-steppers">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                    <span>Cell Steppers</span>
+                                </button>
+                                <button type="button" class="dock-tab-btn" data-dock-tab="dock-pane-specs">
+                                    <i class="fa-solid fa-sliders"></i>
+                                    <span>Specs</span>
+                                </button>
+                            </div>
+
+                            <!-- Dock Panes Content -->
+                            <div class="dock-panels-wrapper">
+                                
+                                <!-- TAB PANE 1: DEFECTS & AUDIT DECISION -->
+                                <div class="dock-pane active" id="dock-pane-defects">
+                                    
+                                    <div class="no-defects-msg" id="ai-no-defects-msg" style="display: none;">
+                                        <i class="fa-solid fa-circle-check text-green fa-2x" style="margin-bottom: 8px;"></i>
+                                        <p style="font-weight: 700; margin: 0;">100% Healthy Panel</p>
+                                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Zero defect anomalies found across all 144 solar cells.</p>
+                                    </div>
+
+                                    <!-- Dynamic Defect Quick List -->
+                                    <div id="defect-items-quick-list" style="display: flex; flex-direction: column; gap: 8px;">
+                                        <!-- Rendered dynamically -->
+                                    </div>
+
+                                    <!-- Audit & Approval Action Card -->
+                                    <div class="ai-audit-card" id="ai-audit-card" style="display: none;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                            <h4 style="margin: 0; font-size: 14px; color: var(--text-main); font-weight: 700;">
+                                                <i class="fa-solid fa-gavel text-gold me-1"></i> Quality Audit & Decision
+                                            </h4>
+                                            <span class="badge" id="audit-match-badge" style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; border-radius: 9999px; padding: 4px 12px; font-size: 12px; font-weight: 700;">--</span>
+                                        </div>
+                                        <p id="audit-match-desc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">--</p>
+                                        <button class="btn btn-primary btn-large" id="btn-save-and-approve" style="width: 100%; font-weight: 700; font-size: 14px; justify-content: center; gap: 8px;">
+                                            <i class="fa-solid fa-floppy-disk"></i> <span>Save & Approve Results</span>
+                                        </button>
+                                    </div>
+
+                                </div>
+
+                                <!-- TAB PANE 2: EL MACHINE COMPARISON -->
+                                <div class="dock-pane" id="dock-pane-el">
+                                    <div class="ai-el-card" id="ai-el-card" style="display: none; margin-top: 0;">
+                                        <h4>
+                                            <span><i class="fa-solid fa-file-invoice text-gold"></i> Machine File Analysis (.EL)</span>
+                                            <span class="badge" id="el-status-badge" style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; border-radius: 9999px; padding: 4px 12px; font-size: 12px; font-weight: 700;">--</span>
+                                        </h4>
+                                        <div class="ai-stat-grid" style="margin-top: 8px;">
+                                            <div class="ai-stat-box orange">
+                                                <span class="lbl">EL Defects</span>
+                                                <span class="val" id="el-stat-defect-count">0</span>
+                                            </div>
+                                            <div class="ai-stat-box purple">
+                                                <span class="lbl">Agreement Index</span>
+                                                <span class="val" id="el-stat-agreement">--%</span>
+                                            </div>
+                                            <div class="ai-stat-box" style="grid-column: span 2;">
+                                                <span class="lbl"><i class="fa-solid fa-barcode text-gold"></i> Serial & Timestamp</span>
+                                                <span class="val" id="el-stat-serial" style="font-size: 12px; color: var(--text-main); font-family: var(--font-mono);">--</span>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 10px;">
+                                            <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Cells Flagged in EL:</span>
+                                            <div class="el-tag-list" id="el-tag-list">
+                                                <span style="color: var(--text-muted); font-size: 12px;">No defective cells recorded</span>
+                                            </div>
+                                        </div>
+                                        <div id="el-comparison-box" style="margin-top: 10px; padding: 8px 12px; background: var(--input-bg, rgba(0,0,0,0.4)); border-radius: 8px; font-size: 12px; border: 1px solid var(--card-border);">
+                                            <div id="el-comparison-text" style="color: var(--text-muted);">--</div>
+                                        </div>
+                                    </div>
+                                    <div id="ai-no-el-msg" style="text-align: center; padding: 30px 10px; color: var(--text-muted);">
+                                        <i class="fa-solid fa-file-excel fa-2x" style="margin-bottom: 10px; opacity: 0.5;"></i>
+                                        <p style="font-size: 13px;">No paired .EL file accompanied this TIF panel.</p>
+                                    </div>
+                                </div>
+
+                                <!-- TAB PANE 3: STEPPERS -->
+                                <div class="dock-pane" id="dock-pane-steppers">
+                                    
+                                    <!-- Stepper: Defective Cells -->
+                                    <div class="ai-stepper-card defect-stepper">
+                                        <div class="stepper-header">
+                                            <h5><i class="fa-solid fa-triangle-exclamation text-red"></i> Defective Cells Only</h5>
+                                            <div class="stepper-controls">
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-def-prev"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-def-next">Next <i class="fa-solid fa-chevron-right"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="stepper-body" id="ai-def-body">
+                                            <div class="stepper-img-box">
+                                                <img id="ai-def-img" src="" alt="Defective Cell Preview">
+                                            </div>
+                                            <div class="stepper-info">
+                                                <span class="cell-id-tag badge-red" id="ai-def-id">D1</span>
+                                                <span class="status-badge badge-red" id="ai-def-badge">Defective ❌</span>
+                                                <span class="conf-tag" id="ai-def-conf">99.8% Conf</span>
+                                            </div>
+                                        </div>
+                                        <div class="no-defects-msg" id="ai-def-empty-msg" style="display: none; margin-top: 10px;">
+                                            <i class="fa-solid fa-circle-check text-green me-1"></i> No defective cells in module (100% Healthy)
+                                        </div>
+                                    </div>
+
+                                    <!-- Stepper: All Cells -->
+                                    <div class="ai-stepper-card" style="margin-top: 10px;">
+                                        <div class="stepper-header">
+                                            <h5><i class="fa-solid fa-list-check"></i> Browse All Cells (144 Cells)</h5>
+                                            <div class="stepper-controls">
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-all-prev"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-all-next">Next <i class="fa-solid fa-chevron-right"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="stepper-body">
+                                            <div class="stepper-img-box">
+                                                <img id="ai-all-img" src="" alt="Cell Preview">
+                                            </div>
+                                            <div class="stepper-info">
+                                                <span class="cell-id-tag" id="ai-all-id">A1</span>
+                                                <span class="status-badge" id="ai-all-badge">Healthy</span>
+                                                <span class="conf-tag" id="ai-all-conf">100% Conf</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stepper: Healthy Cells -->
+                                    <div class="ai-stepper-card healthy-stepper" style="margin-top: 10px;">
+                                        <div class="stepper-header">
+                                            <h5><i class="fa-solid fa-shield-halved text-green"></i> Healthy Cells Only</h5>
+                                            <div class="stepper-controls">
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-hea-prev"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                                                <button type="button" class="btn btn-secondary btn-sm" id="btn-hea-next">Next <i class="fa-solid fa-chevron-right"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="stepper-body">
+                                            <div class="stepper-img-box">
+                                                <img id="ai-hea-img" src="" alt="Healthy Cell Preview">
+                                            </div>
+                                            <div class="stepper-info">
+                                                <span class="cell-id-tag badge-green" id="ai-hea-id">A1</span>
+                                                <span class="status-badge badge-green" id="ai-hea-badge">Healthy ✅</span>
+                                                <span class="conf-tag" id="ai-hea-conf">100% Conf</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- TAB PANE 4: ENGINEERING SPECS -->
+                                <div class="dock-pane" id="dock-pane-specs">
+                                    <div class="ai-meta-card" style="margin-top: 0;">
+                                        <h4><i class="fa-solid fa-drafting-compass text-gold"></i> Engineering Metadata</h4>
+                                        <ul class="meta-list">
+                                            <li><span>process_tif Processing:</span> <strong>Yes (Active)</strong></li>
+                                            <li><span>Original Dimensions:</span> <strong id="ai-meta-orig">--</strong></li>
+                                            <li><span>Model Dimensions (2:1):</span> <strong id="ai-meta-model">--</strong></li>
+                                            <li><span>Padded Dimensions:</span> <strong id="ai-meta-padded">--</strong></li>
+                                            <li><span>Cell Width (CH):</span> <strong id="ai-meta-ch">--</strong></li>
+                                            <li><span>Cell Height (CW):</span> <strong id="ai-meta-cw">--</strong></li>
+                                            <li><span>Square Crop (SL):</span> <strong id="ai-meta-sl">--</strong></li>
+                                            <li><span>Analysis & Display Time:</span> <strong id="ai-meta-time" style="color: var(--accent-blue);">-- ms</strong></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- Global Loading Overlay -->
+        <div class="global-loading-overlay" id="loading-overlay" style="display: none;">
+            <div class="spinner-card">
+                <i class="fa-solid fa-satellite-dish fa-spin fa-3x text-blue"></i>
+                <p id="loading-msg">Processing & Analyzing...</p>
+            </div>
+        </div>
+
+        <!-- Interactive Audit Decision Modal -->
+        <div class="global-loading-overlay" id="audit-decision-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: var(--modal-backdrop); backdrop-filter: blur(12px);">
+            <div class="card" style="max-width: 860px; width: 92%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 24px; padding: 28px; position: relative; box-shadow: var(--card-shadow);">
+                <button id="btn-close-decision-modal" style="position: absolute; top: 22px; right: 22px; width: 36px; height: 36px; border-radius: 9999px; background: var(--bg-elevated); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px;">
+                    <div class="logo-icon" style="width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe;">
+                        <i class="fa-solid fa-scale-balanced text-blue fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 800;" id="decision-modal-title">Audit & Adjudicate Discrepancies (Live Watcher)</h3>
+                        <span style="font-size: 12px; color: var(--text-muted);">Determine the true verdict for each disputed cell to categorize and calculate cumulative accuracy</span>
+                    </div>
+                </div>
+
+                <div id="disputed-cells-list" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--card-border); padding-top: 16px; flex-wrap: wrap; gap: 12px;">
+                    <span style="font-size: 12px; color: var(--text-muted);" id="decision-summary-hint">Please adjudicate all disputed cells, then click Confirm & Save.</span>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" id="btn-cancel-decision" style="border-radius: 9999px; padding: 8px 22px;">Cancel</button>
+                        <button class="btn btn-primary" id="btn-confirm-save-decision" style="border-radius: 9999px; padding: 8px 24px;">
+                            <i class="fa-solid fa-check-double me-1"></i> Confirm & Save to Registry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Universal Application Footer - Intellectual Property & Engineering Attribution -->
+        <footer class="app-universal-footer" id="app-universal-footer">
+            <div class="footer-content-inner">
+                <div class="footer-author-brand">
+                    <div class="footer-author-badge">
+                        <span class="footer-engineered-label">Designed &amp; Engineered</span>
+                        <span class="footer-author-name">By Ali Nasser</span>
+                    </div>
+                    <span class="footer-intellectual-notice">© LuminoAI • All Rights Reserved</span>
+                </div>
+                <div class="footer-links-group">
+                    <a href="https://www.ali-nasser.dev" target="_blank" rel="noopener noreferrer" class="footer-social-link link-website" title="Visit Personal Portfolio">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>ali-nasser.dev</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ali-nasser-b197b5279/" target="_blank" rel="noopener noreferrer" class="footer-social-link link-linkedin" title="Connect on LinkedIn">
+                        <i class="fa-brands fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://github.com/a360n" target="_blank" rel="noopener noreferrer" class="footer-social-link link-github" title="View Source on GitHub">
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <style>
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+    </style>
+
+    <script src="/static/lumino_alerts.js?v=5.6.0"></script>
+    <script src="/static/operator_manager.js?v=5.4.0"></script>
+    <script src="/static/aipath.js?v=5.4.0"></script>
+</body>
+</html>
