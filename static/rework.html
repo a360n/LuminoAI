@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rework & Repair Station - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+    <script src="/static/zxing.min.js"></script>
+
+    <style>
+        /* Dedicated Cleanroom Rework Station Styles */
+        :root {
+            --rework-accent: #2563eb;
+            --rework-danger: #ef4444;
+            --rework-success: #10b981;
+            --rework-warning: #f59e0b;
+            --rework-cell-border: #cbd5e1;
+            --rework-cell-bg: #f8fafc;
+        }
+
+        body.dark-theme {
+            --rework-cell-border: #334155;
+            --rework-cell-bg: #1e293b;
+        }
+
+        .rework-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px 24px 60px 24px;
+            width: 100%;
+        }
+
+        /* Top Bar & Search HUD */
+        .rework-header-hud {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .rework-search-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+        }
+
+        .rework-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .rework-search-input {
+            flex: 1;
+            min-width: 280px;
+            height: 48px;
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            padding: 0 16px;
+            border-radius: 8px;
+            border: 2px solid var(--card-border);
+            background: var(--bg-surface);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+        }
+
+        .rework-search-input:focus {
+            border-color: var(--brand-primary-1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .rework-btn {
+            height: 48px;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            user-select: none;
+        }
+
+        .rework-btn-primary {
+            background: var(--brand-primary-1);
+            color: #ffffff;
+        }
+        .rework-btn-primary:hover {
+            background: var(--brand-primary-2);
+            transform: translateY(-1px);
+        }
+
+        .rework-btn-camera {
+            background: #059669;
+            color: #ffffff;
+        }
+        .rework-btn-camera:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .rework-btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+        .rework-btn-secondary:hover {
+            background: var(--card-border-hover);
+        }
+
+        /* Camera Scanner Modal / Viewport */
+        .camera-scanner-panel {
+            display: none;
+            background: #0f172a;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        }
+
+        .camera-scanner-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .camera-viewport-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000000;
+            aspect-ratio: 4 / 3;
+        }
+
+        #camera-preview-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Laser scanning reticle overlay */
+        .scanner-reticle-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner-reticle-box {
+            width: 80%;
+            height: 38%;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+        }
+
+        .scanner-laser-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, #ff0000, transparent);
+            box-shadow: 0 0 10px 2px rgba(239, 68, 68, 0.85);
+            animation: scanLaser 2.2s infinite ease-in-out;
+        }
+
+        @keyframes scanLaser {
+            0% { top: 5%; }
+            50% { top: 95%; }
+            100% { top: 5%; }
+        }
+
+        .camera-controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Panel Information Banner */
+        .panel-info-banner {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel-title-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .panel-serial-badge {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-pill {
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+        }
+
+        .status-pill.defective {
+            background: rgba(239, 68, 68, 0.15);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-pill.healthy {
+            background: rgba(16, 185, 129, 0.15);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-pill.rework {
+            background: rgba(245, 158, 11, 0.15);
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Workspace 2-Column Layout */
+        .rework-workspace-grid {
+            display: grid;
+            grid-template-columns: minmax(360px, 480px) 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 1100px) {
+            .rework-workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 6x24 Solar Panel Schematic Map Card */
+        .schematic-map-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .schematic-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .schematic-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 6x24 Half-Cut Panel Grid Container */
+        .panel-grid-outer {
+            background: #0b0f19;
+            border: 3px solid #1e293b;
+            border-radius: 10px;
+            padding: 12px 10px;
+            color: #ffffff;
+            user-select: none;
+        }
+
+        .string-header-row {
+            display: grid;
+            grid-template-columns: 24px repeat(6, 1fr) 24px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .half-cut-divider {
+            height: 6px;
+            background: #1e293b;
+            margin: 4px 0;
+            border-radius: 3px;
+            position: relative;
+        }
+        .half-cut-divider::after {
+            content: "CENTER BUSBAR JUNCTION";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #64748b;
+            background: #0b0f19;
+            padding: 0 8px;
+        }
+
+        .schematic-cells-matrix {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .schematic-row {
+            display: grid;
+            grid-template-columns: 24px repeat(6, 1fr) 24px;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .row-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .cell-item {
+            aspect-ratio: 1.8 / 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .cell-item:hover {
+            border-color: #60a5fa;
+            color: #ffffff;
+            transform: scale(1.08);
+            z-index: 5;
+        }
+
+        .cell-item.defective {
+            background: #7f1d1d !important;
+            border: 1.5px solid #ef4444 !important;
+            color: #ffffff !important;
+            font-weight: 800;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+            animation: pulseDefect 2s infinite ease-in-out;
+            z-index: 2;
+        }
+
+        .cell-item.repaired {
+            background: #064e3b !important;
+            border: 1.5px solid #10b981 !important;
+            color: #a7f3d0 !important;
+            animation: none !important;
+            box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+        }
+
+        .cell-item.active-focus {
+            outline: 2px solid #38bdf8 !important;
+            transform: scale(1.18);
+            z-index: 10 !important;
+        }
+
+        @keyframes pulseDefect {
+            0% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.95); }
+            100% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.5); }
+        }
+
+        /* Defect Details & Cards Column */
+        .rework-details-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .rework-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .rework-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .rework-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        /* Defect Cards Grid */
+        .defect-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .defect-cell-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 14px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .defect-cell-card:hover {
+            border-color: var(--brand-primary-1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .defect-cell-card.is-repaired {
+            opacity: 0.75;
+            background: rgba(16, 185, 129, 0.04);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .defect-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .defect-cell-id-badge {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .defect-type-pill {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .defect-type-pill.type-crack { background: #fee2e2; color: #b91c1c; }
+        .defect-type-pill.type-mini-crack { background: #ffedd5; color: #c2410c; }
+        .defect-type-pill.type-short { background: #fef3c7; color: #b45309; }
+        .defect-type-pill.type-missing-ribbon { background: #ede9fe; color: #6d28d9; }
+        .defect-type-pill.type-open-ribbon { background: #fce7f3; color: #be185d; }
+        .defect-type-pill.type-impurities { background: #e0e7ff; color: #4338ca; }
+
+        body.dark-theme .defect-type-pill.type-crack { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        body.dark-theme .defect-type-pill.type-mini-crack { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+        body.dark-theme .defect-type-pill.type-short { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        body.dark-theme .defect-type-pill.type-missing-ribbon { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+        body.dark-theme .defect-type-pill.type-open-ribbon { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        body.dark-theme .defect-type-pill.type-impurities { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+
+        .cell-crop-preview {
+            width: 100%;
+            height: 160px;
+            background: #000000;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            cursor: zoom-in;
+            border: 1px solid var(--card-border);
+            position: relative;
+        }
+
+        .cell-crop-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .cell-repair-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 8px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .repair-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .repair-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--brand-secondary-2);
+        }
+
+        /* Sign-Off Card */
+        .signoff-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        @media (max-width: 900px) {
+            .signoff-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-field label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .form-input, .form-textarea {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--bg-surface);
+            color: var(--text-main);
+            font-family: var(--font-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--brand-primary-1);
+        }
+
+        /* Image Lightbox Modal */
+        .image-lightbox-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .image-lightbox-modal.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* Empty State */
+        .rework-empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .rework-empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Main Workspace (Standalone Dedicated Rework Station) -->
+        <main class="rework-container">
+            
+            <!-- Page Title & Scan HUD -->
+            <div class="rework-header-hud">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Logo" style="height: 38px; width: 38px; border-radius: 8px;">
+                    <div>
+                        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-screwdriver-wrench text-blue"></i> Solar Rework Station
+                        </h2>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">
+                            Scan panel barcode label to navigate defective cells and inspect EL captures.
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div class="hud-chip" id="scanner-status-chip">
+                        <i class="fa-solid fa-barcode text-blue"></i>
+                        <span id="scanner-status-text" style="font-size: 13px; font-weight: 600;">Ready for Barcode Scan</span>
+                    </div>
+                    <button class="btn btn-secondary" id="btn-sound-toggle" title="Toggle scan audio feedback" style="height: 36px; width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
+                        <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- HTTPS Mobile Upgrade Notification Banner (Shown when loaded via HTTP on remote LAN device) -->
+            <div id="https-mobile-banner" style="display: none; background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(16,185,129,0.1)); border: 1px solid rgba(37,99,235,0.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(37,99,235,0.2); display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">Real-Time Continuous Video Scanning Available</div>
+                        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Switch to Secure HTTPS to enable continuous hands-free video scanning on mobile devices without clicking shutter buttons.</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <a id="btn-switch-https" href="#" class="rework-btn rework-btn-primary" style="height: 36px; padding: 0 14px; font-size: 12px;">
+                        <i class="fa-solid fa-lock"></i> Switch to Live HTTPS Mode
+                    </a>
+                    <button id="btn-dismiss-https-banner" type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; font-size: 16px;" title="Dismiss">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barcode Search Card -->
+            <div class="rework-search-card">
+                <div class="rework-input-group">
+                    <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                        <i class="fa-solid fa-barcode" style="position: absolute; left: 16px; color: var(--text-muted); font-size: 18px;"></i>
+                        <input type="text" id="rework-serial-input" class="rework-search-input" style="padding-left: 48px;" placeholder="SCAN LABEL BARCODE OR ENTER SERIAL (E.G. ANM26090020697)..." autofocus autocomplete="off">
+                        <button id="btn-clear-search" style="position: absolute; right: 14px; background: none; border: none; color: var(--text-muted); cursor: pointer; display: none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="rework-btn rework-btn-primary" id="btn-search-panel">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Search Panel</span>
+                    </button>
+                    <input type="file" id="camera-snapshot-input" accept="image/*" capture="environment" style="display: none;">
+                    <button type="button" class="rework-btn rework-btn-camera" id="btn-toggle-camera" title="Toggle real-time video scanner">
+                        <i class="fa-solid fa-video"></i>
+                        <span id="camera-btn-label">Live Camera</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Camera Scanner Viewport Panel -->
+            <div class="camera-scanner-panel" id="camera-scanner-panel">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-video text-green"></i> High-Speed Barcode Scanner Active
+                    </span>
+                    <button type="button" id="btn-close-camera" style="background: transparent; border: none; color: #94a3b8; font-size: 16px; cursor: pointer;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="camera-viewport-wrapper">
+                    <video id="camera-preview-video" playsinline muted></video>
+                    <div class="scanner-reticle-overlay">
+                        <div class="scanner-reticle-box">
+                            <div class="scanner-laser-line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="camera-controls-bar">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-size: 12px; color: #94a3b8;">Camera:</label>
+                        <select id="camera-device-select" style="background: #1e293b; color: #ffffff; border: 1px solid #334155; border-radius: 6px; padding: 4px 8px; font-size: 12px; outline: none;"></select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" class="rework-btn rework-btn-secondary" id="btn-camera-torch" style="height: 32px; padding: 0 12px; font-size: 12px; display: none;">
+                            <i class="fa-solid fa-bolt"></i> Flashlight
+                        </button>
+                        <span id="camera-debug-hint" style="font-size: 11px; color: #94a3b8;">Align red laser with Code 128 barcode</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Loaded Container (Hidden until scanned) -->
+            <div id="panel-content-container" style="display: none;">
+                
+                <!-- Panel Header Banner -->
+                <div class="panel-info-banner">
+                    <div class="panel-title-meta">
+                        <div class="panel-serial-badge">
+                            <i class="fa-solid fa-solar-panel text-blue"></i>
+                            <span id="display-serial-number">--</span>
+                        </div>
+                        <span class="status-pill defective" id="display-status-pill">
+                            <i class="fa-solid fa-triangle-exclamation"></i> <span id="display-status-text">DEFECTIVE</span>
+                        </span>
+                        <span class="status-pill rework" id="display-rework-pill">
+                            <i class="fa-solid fa-rotate"></i> <span id="display-rework-text">Cycle #1</span>
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-muted); flex-wrap: wrap;">
+                        <div><i class="fa-regular fa-clock"></i> <span id="display-audited-time">--</span></div>
+                        <div><i class="fa-solid fa-user-check"></i> <span id="display-operator-name">--</span></div>
+                        <div><i class="fa-solid fa-file-code"></i> <span id="display-filename">--</span></div>
+                    </div>
+                </div>
+
+                <!-- 2-Column Workspace Grid -->
+                <div class="rework-workspace-grid">
+                    
+                    <!-- Left Column: 6x24 Solar Schematic Map -->
+                    <div class="schematic-map-card">
+                        <div class="schematic-header">
+                            <h3>
+                                <i class="fa-solid fa-border-all text-blue"></i> 6×24 Cell Matrix Map
+                            </h3>
+                            <span id="schematic-defect-count-badge" style="font-size: 12px; font-weight: 700; color: #dc2626;">
+                                0 Defective Cells
+                            </span>
+                        </div>
+
+                        <!-- 6x24 Half-Cut Panel Grid -->
+                        <div class="panel-grid-outer">
+                            <!-- String Column Headers: String A through F -->
+                            <div class="string-header-row">
+                                <div></div>
+                                <div>A</div>
+                                <div>B</div>
+                                <div>C</div>
+                                <div>D</div>
+                                <div>E</div>
+                                <div>F</div>
+                                <div></div>
+                            </div>
+
+                            <!-- Top Half: Rows 1 to 12 -->
+                            <div class="schematic-cells-matrix" id="schematic-top-half"></div>
+
+                            <!-- Middle Junction Busbar Divider -->
+                            <div class="half-cut-divider"></div>
+
+                            <!-- Bottom Half: Rows 13 to 24 -->
+                            <div class="schematic-cells-matrix" id="schematic-bottom-half"></div>
+                        </div>
+
+                        <!-- Full EL Inspection Image Toggle -->
+                        <div style="margin-top: 16px;">
+                            <button type="button" class="rework-btn rework-btn-secondary" id="btn-toggle-full-el" style="width: 100%; justify-content: center;">
+                                <i class="fa-solid fa-image"></i> View Full Infrared EL Capture
+                            </button>
+                            <div id="full-el-container" style="display: none; margin-top: 12px; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--card-border);">
+                                <img id="full-el-image" src="" style="width: 100%; display: block; object-fit: contain; max-height: 480px;" alt="Full Solar Panel EL Image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Defective Cells Gallery & Repair Form -->
+                    <div class="rework-details-column">
+                        
+                        <!-- Defective Cells List Card -->
+                        <div class="rework-card">
+                            <div class="rework-card-header">
+                                <h3 class="rework-card-title">
+                                    <i class="fa-solid fa-microscope text-red"></i> Defective Cell Inspection Gallery
+                                </h3>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 12px; color: var(--text-muted);" id="repaired-progress-count">0 / 0 Repaired</span>
+                                </div>
+                            </div>
+
+                            <!-- Defective Cards Container -->
+                            <div class="defect-cards-grid" id="defect-cards-container"></div>
+                        </div>
+
+                        <!-- Technician Sign-Off & Repair Logging Card -->
+                        <div class="rework-card" style="border-left: 4px solid var(--brand-secondary-2);">
+                            <div class="rework-card-header">
+                                <h3 class="rework-card-title">
+                                    <i class="fa-solid fa-circle-check text-green"></i> Rework Sign-Off & Line Re-Entry
+                                </h3>
+                            </div>
+                            <div class="signoff-form-grid">
+                                <div class="form-field">
+                                    <label>Technician Name</label>
+                                    <input type="text" class="form-input" id="rework-tech-input" value="Rework Engineer">
+                                </div>
+                                <div class="form-field">
+                                    <label>Repair Notes / Actions Performed</label>
+                                    <input type="text" class="form-input" id="rework-notes-input" placeholder="e.g. Re-soldered busbar ribbon on C14, cleaned cell F08...">
+                                </div>
+                                <div>
+                                    <button type="button" class="rework-btn rework-btn-primary" id="btn-confirm-repaired" style="background: #059669; height: 44px; white-space: nowrap;">
+                                        <i class="fa-solid fa-check-double"></i> Complete Repair Sign-Off
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prior Inspection & Rework History Timeline -->
+                        <div class="rework-card" id="history-card" style="display: none;">
+                            <div class="rework-card-header">
+                                <h3 class="rework-card-title">
+                                    <i class="fa-solid fa-clock-rotate-left text-blue"></i> Prior Inspection & Rework History
+                                </h3>
+                            </div>
+                            <div id="history-timeline-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Empty / Initial Placeholder State -->
+            <div class="rework-search-card rework-empty-state" id="rework-placeholder-state">
+                <i class="fa-solid fa-barcode"></i>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">No Panel Loaded</h3>
+                <p style="font-size: 14px; max-width: 500px; margin: 0 auto 20px auto;">
+                    Scan the 1D barcode on the solar panel frame or enter the serial number above to load the cell defect map and high-resolution EL photographs.
+                </p>
+                <button type="button" class="rework-btn rework-btn-camera" id="btn-empty-start-camera" style="margin: 0 auto;">
+                    <i class="fa-solid fa-camera"></i> Start Camera Scanner
+                </button>
+            </div>
+
+        </main>
+
+        <!-- Image Magnification Lightbox Modal -->
+        <div class="image-lightbox-modal" id="image-lightbox-modal">
+            <div class="lightbox-content">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; color: #ffffff;">
+                    <span id="lightbox-title" style="font-size: 16px; font-weight: 700;">Cell Magnifier</span>
+                    <button type="button" id="btn-close-lightbox" style="background: none; border: none; color: #ffffff; font-size: 20px; cursor: pointer;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <img id="lightbox-image" class="lightbox-img" src="" alt="Magnified Cell View">
+                <div id="lightbox-caption" style="color: #94a3b8; font-size: 13px;"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Rework Station Application Logic -->
+    <script src="/static/rework.js?v=1.0.0"></script>
+</body>
+</html>
