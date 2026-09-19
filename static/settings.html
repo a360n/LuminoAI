@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminoAI - System Settings & Factory Branding</title>
+    
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Dynamic Theme & Branding Manager (Executes early to prevent FOUC) -->
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+    
+    <style>
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        @media (max-width: 900px) {
+            .settings-grid { grid-template-columns: 1fr; }
+        }
+        .settings-nav {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: fit-content;
+            box-shadow: var(--card-shadow);
+        }
+        .settings-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .settings-nav-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-elevated);
+        }
+        .settings-nav-btn.active {
+            color: var(--brand-primary-1);
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            font-weight: 700;
+        }
+        .operator-table-wrapper {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            background: #ffffff;
+        }
+        .operator-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        .operator-table th {
+            padding: 12px 18px;
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .operator-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: var(--text-main);
+        }
+        .operator-table tr:hover td {
+            background: #f8fafc;
+        }
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--brand-primary-1);
+            font-size: 13px;
+        }
+
+        /* Navbar Mockup Preview */
+        .navbar-mockup {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        <!-- Top App Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Operator Administration, Factory Branding & System Configuration</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain text-gold"></i> AI Solar Inspection
+                </a>
+                <a href="/aipath" class="tab-btn">
+                    <i class="fa-solid fa-satellite-dish text-gold"></i> Live Watcher (AI Path)
+                </a>
+                <a href="/audit" class="tab-btn">
+                    <i class="fa-solid fa-clipboard-check text-gold"></i> Audited Panels (Registry)
+                </a>
+                <a href="/settings" class="tab-btn active">
+                    <i class="fa-solid fa-gear text-gold"></i> Settings
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple text-gold"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main" style="padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%;">
+            
+            <!-- Page Title Card -->
+            <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--card-shadow);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 42px; height: 42px; border-radius: 14px; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: var(--brand-primary-1); font-size: 18px;">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: var(--text-main);">Settings & Identity</h2>
+                        <p style="margin: 2px 0 0 0; color: var(--text-muted); font-size: 13px;">Manage inspection line operators and customize factory branding</p>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-secondary btn-sm" id="btn-refresh-operators">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <!-- Sidebar Nav -->
+                <aside class="settings-nav">
+                    <button class="settings-nav-btn active" data-tab="operators">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>Operators Roster</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="branding">
+                        <i class="fa-solid fa-industry"></i>
+                        <span>Factory Identity & Logo</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="watcher">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>Production Watcher (AI Path)</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="ecolab-db">
+                        <i class="fa-solid fa-database text-blue"></i>
+                        <span>EcoLAB Database Integration</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="database-maintenance">
+                        <i class="fa-solid fa-server" style="color: #ef4444;"></i>
+                        <span>Database Maintenance</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="alerts">
+                        <i class="fa-solid fa-bell"></i>
+                        <span>Alerts &amp; Notifications</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="system-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>System Information</span>
+                    </button>
+                    <button class="settings-nav-btn" data-tab="support">
+                        <i class="fa-solid fa-headset"></i>
+                        <span>Support & Helpdesk</span>
+                    </button>
+                </aside>
+
+                <!-- Settings Content Area -->
+                <section class="settings-content">
+                    
+                    <!-- TAB 1: OPERATOR MANAGEMENT -->
+                    <div id="tab-pane-operators" style="display: block;">
+                        
+                        <!-- Top KPI Stats Row -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-users me-1" style="color: var(--brand-primary-1);"></i> Total Operators</div>
+                                <div id="stat-total-operators" style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-top: 6px; font-family: var(--font-mono);">0</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-user-check me-1" style="color: var(--brand-secondary-2);"></i> Active Operator</div>
+                                <div id="stat-active-operator" style="font-size: 20px; font-weight: 800; color: var(--brand-secondary-2); margin-top: 8px;">--</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;"><i class="fa-solid fa-clipboard-check me-1" style="color: var(--brand-primary-1);"></i> Audited Panels</div>
+                                <div id="stat-total-audited-panels" style="font-size: 28px; font-weight: 800; color: var(--brand-primary-1); margin-top: 6px; font-family: var(--font-mono);">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Add Operator Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-user-plus" style="color: var(--brand-primary-1);"></i> Add Operator
+                            </div>
+                            <form id="form-add-operator" style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end;">
+                                <div style="flex: 2; min-width: 200px;">
+                                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Operator Name / ID *</label>
+                                    <input type="text" id="input-operator-name" class="text-input" placeholder="e.g. Ali Al-Khazali" required style="width: 100%; padding: 11px 16px; border-radius: 12px;">
+                                </div>
+                                <div style="flex: 1.5; min-width: 180px;">
+                                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Role / Designation</label>
+                                    <select id="select-operator-role" class="text-input" style="width: 100%; padding: 11px 16px; border-radius: 12px;">
+                                        <option value="Line Inspector">Line Inspector</option>
+                                        <option value="Shift Supervisor">Shift Supervisor</option>
+                                        <option value="Quality Assurance (QA)">Quality Assurance (QA)</option>
+                                        <option value="Solar PV Engineer">Solar PV Engineer</option>
+                                        <option value="Maintenance Technician">Maintenance Technician</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary" id="btn-submit-add-op">
+                                        <i class="fa-solid fa-plus"></i>
+                                        <span>Add Operator</span>
+                                    </button>
+                                </div>
+                            </form>
+                            <div id="add-operator-feedback" style="display: none; margin-top: 12px; font-size: 13px; font-weight: 600;"></div>
+                        </div>
+
+                        <!-- Operators List Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; box-shadow: var(--card-shadow);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                                <div style="font-size: 16px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-address-book" style="color: var(--brand-primary-1);"></i> Operators Directory
+                                </div>
+                                <div style="width: 260px;">
+                                    <input type="text" id="search-operator-input" placeholder="Search operators..." style="width: 100%; padding: 9px 16px; border-radius: 9999px; background: #ffffff; border: 1px solid var(--card-border); color: var(--text-main); font-size: 13px;">
+                                </div>
+                            </div>
+
+                            <div class="operator-table-wrapper">
+                                <table class="operator-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Operator</th>
+                                            <th>Role</th>
+                                            <th>Registration Date</th>
+                                            <th>Audited Panels</th>
+                                            <th>Current Status</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="operators-table-body">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                                <i class="fa-solid fa-spinner fa-spin me-2"></i> Loading operators list...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 2: FACTORY IDENTITY & LOGO -->
+                    <div id="tab-pane-branding" style="display: none;">
+                        
+                        <!-- Factory Identity Name Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-industry" style="color: var(--brand-primary-1);"></i> Factory Identity
+                            </div>
+                            <div style="max-width: 560px;">
+                                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Factory / Enterprise Name</label>
+                                <input type="text" id="input-factory-name" class="text-input" placeholder="e.g. LuminoAI Solar Gigafactory" style="width: 100%; padding: 11px 16px; border-radius: 12px;">
+                            </div>
+                        </div>
+
+                        <!-- Factory Logo Uploader Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                                <div style="font-size: 16px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-image" style="color: var(--brand-primary-1);"></i> Factory Logo & Auto-Scaler
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-default-logo">
+                                    <i class="fa-solid fa-earth-americas text-muted"></i>
+                                    <span>Reset to Default Logo</span>
+                                </button>
+                            </div>
+
+                            <!-- Upload Area & Live Navbar Mockup -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: center;">
+                                <div id="logo-dropzone" style="border: 2px dashed #cbd5e1; border-radius: 20px; padding: 32px 20px; text-align: center; background: var(--bg-elevated); cursor: pointer; transition: all 0.2s ease;">
+                                    <i class="fa-solid fa-cloud-arrow-up fa-2x text-muted" style="margin-bottom: 12px;"></i>
+                                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: var(--text-main);">Click or Drag & Drop Factory Logo</h4>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">PNG, JPG, SVG, WebP (Auto-scaled to header)</p>
+                                    <input type="file" id="input-factory-logo" accept="image/*" style="display: none;">
+                                </div>
+
+                                <!-- Live Navbar Mockup Preview -->
+                                <div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+                                        <i class="fa-solid fa-eye text-blue me-1"></i> Live Header Preview:
+                                    </div>
+                                    <div class="navbar-mockup">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <div class="brand-logo-container" id="preview-logo-container">
+                                                <img src="/static/default_globe_logo.svg?v=1" alt="Logo Preview" id="preview-logo-img" class="brand-logo-img">
+                                            </div>
+                                            <div>
+                                                <div id="preview-factory-title" style="font-size: 14px; font-weight: 800; color: var(--text-main);">LuminoAI Solar Gigafactory</div>
+                                                <div style="font-size: 11px; color: var(--text-muted);">Solar PV Inspection</div>
+                                            </div>
+                                        </div>
+                                        <span class="badge" id="preview-logo-badge" style="background: #eff6ff; border: 1px solid #bfdbfe; color: var(--brand-primary-1); font-size: 11px; border-radius: 9999px; padding: 4px 10px;">
+                                            Auto-Scaled (42px)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons Row -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="btn btn-primary" id="btn-save-branding">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    <span>Save & Apply Identity</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btn-reset-all-branding">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span>Reset to Default</span>
+                                </button>
+                            </div>
+                            <div id="branding-feedback" style="display: none;"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 3: SYSTEM INFORMATION -->
+                    <div id="tab-pane-system-info" style="display: none;">
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; box-shadow: var(--card-shadow);">
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-microchip" style="color: var(--brand-primary-1);"></i> System Specifications
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Neural Network Backbone</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--brand-primary-1); margin-top: 4px;">EfficientNet-B0 (PyTorch)</div>
+                                </div>
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Panel Matrix Geometry</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-top: 4px;">6 Rows x 24 Columns (144 Cells)</div>
+                                </div>
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Database Engine</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--brand-secondary-2); margin-top: 4px;">SQLite 3 (Audit & Operators)</div>
+                                </div>
+                                <div style="padding: 16px; background: var(--bg-elevated); border-radius: 16px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Factory Logo Engine</div>
+                                    <div style="font-size: 15px; font-weight: 700; color: var(--brand-secondary-1); margin-top: 4px;">Auto-Scaler with Default Globe</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: SUPPORT & HELPDESK -->
+                    <div id="tab-pane-support" style="display: none;">
+                        
+                        <!-- Direct Support Channel Banner -->
+                        <div class="support-direct-banner">
+                            <div class="support-direct-icon">
+                                <i class="fa-solid fa-headset"></i>
+                            </div>
+                            <div class="support-direct-info">
+                                <h3>Direct Engineering Support</h3>
+                                <p>For technical assistance, algorithmic calibration, or feature requests, contact the system engineer directly via email:</p>
+                                <a href="mailto:alinasserkhazali@gmail.com" class="support-email-badge">
+                                    <i class="fa-solid fa-envelope"></i>
+                                    <span>alinasserkhazali@gmail.com</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Ticket / Support Form Card -->
+                        <div class="card support-card">
+                            <div class="support-card-header">
+                                <i class="fa-solid fa-paper-plane text-blue"></i>
+                                <div>
+                                    <h3>Submit a Support Ticket</h3>
+                                    <p>Fill out the details below. Your request is automatically stored in the local audit database and queued for transmission.</p>
+                                </div>
+                            </div>
+
+                            <form id="form-support-ticket" class="support-form">
+                                <div class="form-group">
+                                    <label for="input-support-email"><i class="fa-solid fa-at"></i> Your Email Address *</label>
+                                    <input type="email" id="input-support-email" class="text-input" placeholder="e.g. your-email@company.com" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="input-support-subject"><i class="fa-solid fa-heading"></i> Subject / Title *</label>
+                                    <input type="text" id="input-support-subject" class="text-input" placeholder="Brief summary of the issue or inquiry" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="input-support-message"><i class="fa-solid fa-message"></i> Description / Message *</label>
+                                    <textarea id="input-support-message" class="text-input" rows="5" placeholder="Please describe the issue, panel serial, steps to reproduce, or support requirements in detail..." required></textarea>
+                                </div>
+
+                                <div class="support-form-actions">
+                                    <button type="submit" class="btn btn-primary btn-large" id="btn-submit-support">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                        <span>Send Support Inquiry</span>
+                                    </button>
+                                    <a href="mailto:alinasserkhazali@gmail.com" id="link-direct-mailto" class="btn btn-secondary btn-large">
+                                        <i class="fa-solid fa-envelope-open-text"></i>
+                                        <span>Open in Email Client</span>
+                                    </a>
+                                </div>
+                            </form>
+
+                            <div id="support-form-feedback" style="display: none;" class="support-feedback-box"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 5: PRODUCTION WATCHER (AI PATH) -->
+                    <div id="tab-pane-watcher" style="display: none;">
+                        
+                        <!-- Watcher Configuration Card -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); display: flex; align-items: center; justify-content: center; color: var(--brand-primary-1); font-size: 20px;">
+                                        <i class="fa-solid fa-satellite-dish"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Automated Production Folder Watcher (AI Path)</h3>
+                                        <p style="margin: 3px 0 0 0; color: var(--text-muted); font-size: 13px;">Continuous background directory monitoring for incoming solar panel .TIF images &amp; .EL files</p>
+                                    </div>
+                                </div>
+                                <a href="/aipath" class="btn btn-secondary btn-sm" style="font-weight: 700;">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-blue"></i>
+                                    <span>Open Live AI Path Radar</span>
+                                </a>
+                            </div>
+
+                            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0 0 18px 0;">
+                                The production folder watcher is permanently stored in the local SQLite database. Once configured, LuminoAI keeps listening continuously in the background across page changes, browser refreshes, and application restarts.
+                            </p>
+
+                            <!-- Dynamic Live Status Banner / Alert -->
+                            <div id="watcher-status-card" style="padding: 16px 20px; border-radius: 14px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: var(--bg-elevated); border: 1px solid var(--card-border);">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div id="watcher-status-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #94a3b8;"></div>
+                                    <div>
+                                        <div id="watcher-status-title" style="font-size: 14px; font-weight: 700; color: var(--text-main);">Checking watcher status...</div>
+                                        <div id="watcher-status-detail" style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px;">Loading configuration from database...</div>
+                                    </div>
+                                </div>
+                                <span id="watcher-status-badge" class="badge" style="background: #eff6ff; color: var(--brand-primary-1); font-size: 12px; padding: 6px 14px; border-radius: 9999px; font-weight: 700; border: 1px solid #bfdbfe;">
+                                    Standby
+                                </span>
+                            </div>
+
+                            <!-- Folder Path Form -->
+                            <form id="form-watcher-config">
+                                <div style="margin-bottom: 16px;">
+                                    <label for="input-watcher-folder" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+                                        <i class="fa-solid fa-folder-open me-1" style="color: var(--brand-primary-1);"></i> Production Directory Path (Local or Network Share) *
+                                    </label>
+                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                        <input type="text" id="input-watcher-folder" class="text-input" placeholder="e.g. C:\SolarPanels\LiveLine or /Users/username/Desktop/panels" style="flex: 1; min-width: 280px; padding: 12px 18px; border-radius: 12px; font-family: var(--font-mono); font-size: 13px;">
+                                        <button type="button" class="btn btn-secondary" id="btn-use-test-panels" title="Load Default Test Folder">
+                                            <i class="fa-solid fa-wand-magic-sparkles text-gold"></i>
+                                            <span>Test Folder</span>
+                                        </button>
+                                    </div>
+                                    <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0 4px;">
+                                        <i class="fa-solid fa-circle-info me-1"></i> LuminoAI ignores historical files in this folder upon activation and triggers real-time AI inspections only for newly arriving .TIF panels.
+                                    </p>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-top: 24px; padding-top: 18px; border-top: 1px solid #f1f5f9;">
+                                    <div style="display: flex; gap: 12px;">
+                                        <button type="submit" class="btn btn-primary" id="btn-save-watcher">
+                                            <i class="fa-solid fa-floppy-disk"></i>
+                                            <span>Save &amp; Activate Watcher</span>
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" id="btn-clear-watcher">
+                                            <i class="fa-solid fa-ban text-red"></i>
+                                            <span>Clear &amp; Stop Watcher</span>
+                                        </button>
+                                    </div>
+                                    <div id="watcher-feedback" style="display: none; font-size: 13px; font-weight: 600;"></div>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB: ECOLAB SQL SERVER DATABASE INTEGRATION -->
+                    <div id="tab-pane-ecolab-db" style="display: none;">
+                        
+                        <!-- Top Header Card -->
+                        <div class="settings-card" style="margin-bottom: 22px;">
+                            <div class="settings-card-header">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(37, 99, 235, 0.3); display: flex; align-items: center; justify-content: center; color: var(--brand-primary-1); font-size: 20px;">
+                                        <i class="fa-solid fa-database"></i>
+                                    </div>
+                                     <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">EcoLAB SQL Server Integration</h3>
+                                        <p style="margin: 3px 0 0 0; color: var(--text-muted); font-size: 13px;">Live synchronization with ECOLAB_0 in .\sqlexpress &amp; verification against E:\EL_Repo</p>
+                                    </div>
+                                </div>
+                                <span id="ecolab-db-status-badge" class="badge" style="background: #eff6ff; color: var(--brand-primary-1); font-size: 12px; padding: 6px 14px; border-radius: 9999px; font-weight: 700; border: 1px solid #bfdbfe;">
+                                    Checking...
+                                </span>
+                            </div>
+
+                            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0 0 18px 0;">
+                                Enables real-time retrieval of solar panel Serial Numbers, test timestamps, and machine scores directly from <code>dbo.Tests</code> and correlates them with files in the production repository without triggering AI inference until verification is complete.
+                            </p>
+
+                            <!-- Live Connection Status Alert Box -->
+                            <div id="ecolab-db-status-banner" style="padding: 16px 20px; border-radius: 14px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: var(--bg-elevated); border: 1px solid var(--card-border);">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div id="ecolab-db-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #94a3b8;"></div>
+                                    <div>
+                                        <div id="ecolab-db-status-title" style="font-size: 14px; font-weight: 700; color: var(--text-main);">Checking SQL Server...</div>
+                                        <div id="ecolab-db-status-detail" style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px;">Data Source: .\sqlexpress | Catalog: ECOLAB_0</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" id="btn-test-ecolab-db" style="font-weight: 700;">
+                                        <i class="fa-solid fa-plug text-blue"></i>
+                                        <span>Test Connection</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Database Settings Form -->
+                            <form id="form-ecolab-db-config">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                                    <div>
+                                        <label for="input-sql-server" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                                             <i class="fa-solid fa-server me-1 text-blue"></i> SQL Server / Data Source *
+                                        </label>
+                                        <input type="text" id="input-sql-server" class="text-input" value=".\sqlexpress" placeholder="e.g. .\sqlexpress or localhost" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-family: var(--font-mono); font-size: 13px;">
+                                    </div>
+                                    <div>
+                                        <label for="input-sql-database" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                                            <i class="fa-solid fa-table me-1 text-blue"></i> Database Name (Initial Catalog) *
+                                        </label>
+                                        <input type="text" id="input-sql-database" class="text-input" value="ECOLAB_0" placeholder="e.g. ECOLAB_0" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-family: var(--font-mono); font-size: 13px;">
+                                    </div>
+                                    <div>
+                                        <label for="input-sql-username" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                                            <i class="fa-solid fa-user me-1 text-blue"></i> User ID (SQL Authentication) *
+                                        </label>
+                                        <input type="text" id="input-sql-username" class="text-input" value="ecodba" placeholder="e.g. ecodba" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-family: var(--font-mono); font-size: 13px;">
+                                    </div>
+                                    <div>
+                                        <label for="input-sql-password" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                                            <i class="fa-solid fa-key me-1 text-blue"></i> Password *
+                                        </label>
+                                        <div style="position: relative;">
+                                            <input type="password" id="input-sql-password" class="text-input" value="eco.PWD" placeholder="••••••••" style="width: 100%; padding: 10px 38px 10px 14px; border-radius: 10px; font-family: var(--font-mono); font-size: 13px;">
+                                            <button type="button" id="btn-toggle-sql-pwd" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Toggle Listener -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 12px; margin-bottom: 18px;">
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Live Background Database Listener</div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Polls dbo.Tests every 1.5s for new panel records and correlates with EL_Repo on disk.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="chk-enable-ecolab-db">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                                    <div style="display: flex; gap: 12px;">
+                                        <button type="submit" class="btn btn-primary" id="btn-save-ecolab-db">
+                                            <i class="fa-solid fa-floppy-disk"></i>
+                                            <span>Save &amp; Connect</span>
+                                        </button>
+                                    </div>
+                                    <div id="ecolab-db-feedback" style="display: none; font-size: 13px; font-weight: 600;"></div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- HISTORICAL BACKFILL ENGINE CARD -->
+                        <div class="settings-card" id="backfill-card" style="border: 1px solid rgba(59, 130, 246, 0.25);">
+                            <div class="settings-card-header">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 20px;">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Historical Backfill Engine (Mass Ingestion)</h3>
+                                        <p style="margin: 3px 0 0 0; color: var(--text-muted); font-size: 13px;">Asynchronously analyze and audit all historical panels (27,000+) from newest to oldest</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" id="btn-view-auto-approved" style="font-weight: 700; border-radius: 8px; padding: 6px 14px; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #059669;">
+                                        <i class="fa-solid fa-list-check me-1"></i> View Approved Serials
+                                    </button>
+                                    <span id="backfill-status-badge" class="badge" style="background: #f1f5f9; color: #64748b; font-size: 12px; padding: 6px 14px; border-radius: 9999px; font-weight: 700; border: 1px solid #cbd5e1;">
+                                        <i class="fa-solid fa-circle-pause me-1"></i> Idle
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Backfill KPI counters -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 16px 0;">
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Processed</div>
+                                    <div id="backfill-kpi-total" style="font-size: 22px; font-weight: 800; color: var(--text-main); margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: rgba(16, 185, 129, 0.08); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    <div style="font-size: 11px; font-weight: 700; color: #059669; text-transform: uppercase;">Auto-Approved (Clean)</div>
+                                    <div id="backfill-kpi-approved" style="font-size: 22px; font-weight: 800; color: #059669; margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: rgba(245, 158, 11, 0.08); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                    <div style="font-size: 11px; font-weight: 700; color: #d97706; text-transform: uppercase;">Pending Review (Defects)</div>
+                                    <div id="backfill-kpi-pending" style="font-size: 22px; font-weight: 800; color: #d97706; margin-top: 4px;">0</div>
+                                </div>
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border);">
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Serial Number</div>
+                                    <div id="backfill-kpi-current-id" style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--brand-primary-1); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">None</div>
+                                </div>
+                            </div>
+
+                            <!-- Controls & Feedback -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button type="button" class="btn btn-primary" id="btn-start-backfill" style="font-weight: 700;">
+                                        <i class="fa-solid fa-play"></i> <span>Start Backfill</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="btn-pause-backfill" style="display: none; font-weight: 700;">
+                                        <i class="fa-solid fa-pause"></i> <span>Pause</span>
+                                    </button>
+                                    <button type="button" id="btn-stop-backfill" style="display: none; background: #dc2626; color: white; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                                        <i class="fa-solid fa-stop"></i> <span>Stop</span>
+                                    </button>
+                                </div>
+                                <div id="backfill-status-message" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+                                    Engine is idle. Click "Start Backfill" to begin historical ingestion.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LIVE SQL & DISK MATCH STREAM MONITOR -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 20px;">
+                                        <i class="fa-solid fa-satellite"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Live Inspection &amp; Disk Match Feed</h3>
+                                        <p style="margin: 3px 0 0 0; color: var(--text-muted); font-size: 13px;">Correlates SQL Server records with EL_Repo files in real-time (Monitor Mode)</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-latest-record">
+                                        <i class="fa-solid fa-rotate-right text-gold"></i>
+                                        <span>Fetch Latest Now</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Live Match Cards Container -->
+                            <div id="ecolab-db-live-feed-container">
+                                <div id="ecolab-db-empty-placeholder" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                                    <i class="fa-solid fa-inbox" style="font-size: 40px; margin-bottom: 12px; color: #94a3b8;"></i>
+                                    <div style="font-weight: 700; font-size: 15px; color: var(--text-main);">Waiting for incoming inspection records from machine...</div>
+                                    <div style="font-size: 13px; margin-top: 4px;">When the machine tests a new solar panel, its serial number, file path, and disk match status will appear here in real-time.</div>
+                                </div>
+                                <div id="ecolab-db-events-list" style="display: flex; flex-direction: column; gap: 14px;">
+                                    <!-- Rendered dynamically via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 6: ALERTS & NOTIFICATIONS -->
+                    <div id="tab-pane-alerts" style="display: none;">
+                        
+                        <!-- Desktop Notifications Card -->
+                        <div class="settings-card" style="margin-bottom: 22px;">
+                            <div class="settings-card-header">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(37, 99, 235, 0.12); color: var(--brand-primary-1); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                        <i class="fa-solid fa-desktop"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Desktop Screen Notifications</h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted);">OS-level notification banners (Windows Action Center &amp; macOS Notifications) even when browser is minimized</p>
+                                    </div>
+                                </div>
+                                <span id="notif-permission-badge" class="badge" style="background: #eff6ff; color: var(--brand-primary-1); font-size: 12px; padding: 5px 14px; border-radius: 9999px; font-weight: 700; border: 1px solid #bfdbfe;">
+                                    Checking...
+                                </span>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 18px; padding-top: 10px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 12px;">
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Enable Desktop Banners</div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Display native popups on Windows and macOS when an incoming panel is classified</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggle-desktop-notif" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-secondary" id="btn-request-notif-perm">
+                                        <i class="fa-solid fa-key text-blue"></i>
+                                        <span>Grant Browser Permission</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="btn-test-desktop-notif">
+                                        <i class="fa-solid fa-paper-plane text-green"></i>
+                                        <span>Send Test Screen Notification</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cleanroom Audio Alerts Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(5, 150, 105, 0.12); color: var(--brand-secondary-2); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Cleanroom Industrial Audio Alerts</h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted);">Real-time auditory cues synthesized via Web Audio (Arrival, Healthy Pass, and Defect Warning)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 20px; padding-top: 10px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 12px;">
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Enable Audio Chimes</div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Synthesize sound effects during production monitoring</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggle-sound-alerts" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <!-- Volume Slider -->
+                                <div style="padding: 14px 18px; background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 12px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">Alert Volume</span>
+                                        <span id="label-sound-volume" style="font-size: 12px; font-family: var(--font-mono); font-weight: 700; color: var(--brand-primary-1);">70%</span>
+                                    </div>
+                                    <input type="range" id="input-sound-volume" min="0" max="100" value="70" style="width: 100%; cursor: pointer;">
+                                </div>
+
+                                <!-- Individual Sound Previews -->
+                                <div>
+                                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px;">
+                                        Interactive Sound Previews:
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                                        <button type="button" class="btn btn-secondary" id="btn-test-sound-arrival" style="justify-content: flex-start; padding: 12px 16px;">
+                                            <i class="fa-solid fa-bell text-blue" style="font-size: 16px;"></i>
+                                            <div style="text-align: left; margin-left: 8px;">
+                                                <div style="font-size: 13px; font-weight: 700;">1. Arrival Chime</div>
+                                                <div style="font-size: 11px; color: var(--text-muted);">When file arrives in folder</div>
+                                            </div>
+                                        </button>
+
+                                        <button type="button" class="btn btn-secondary" id="btn-test-sound-pass" style="justify-content: flex-start; padding: 12px 16px;">
+                                            <i class="fa-solid fa-circle-check text-green" style="font-size: 16px;"></i>
+                                            <div style="text-align: left; margin-left: 8px;">
+                                                <div style="font-size: 13px; font-weight: 700;">2. Clean Pass Chime</div>
+                                                <div style="font-size: 11px; color: var(--text-muted);">When panel has zero defects</div>
+                                            </div>
+                                        </button>
+
+                                        <button type="button" class="btn btn-secondary" id="btn-test-sound-defect" style="justify-content: flex-start; padding: 12px 16px;">
+                                            <i class="fa-solid fa-triangle-exclamation text-red" style="font-size: 16px;"></i>
+                                            <div style="text-align: left; margin-left: 8px;">
+                                                <div style="font-size: 13px; font-weight: 700;">3. Defect Warning Alarm</div>
+                                                <div style="font-size: 11px; color: var(--text-muted);">When defects are detected</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB: DATABASE MAINTENANCE & STORAGE DIAGNOSTICS -->
+                    <div id="tab-pane-database-maintenance" style="display: none;">
+                        
+                        <!-- Top Header Row -->
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(239, 68, 68, 0.12); color: #ef4444; font-size: 16px;">
+                                            <i class="fa-solid fa-server"></i>
+                                        </span>
+                                        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0;">Database Maintenance &amp; Storage Diagnostics</h2>
+                                    </div>
+                                    <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                                        Inspect local SQLite storage metrics, monitor table row counts, and execute authorized purge procedures.
+                                    </p>
+                                </div>
+                                <button type="button" class="btn btn-secondary" id="btn-refresh-db-metrics" style="border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-rotate"></i>
+                                    <span>Refresh Storage Stats</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Storage Metrics KPI Row -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-hard-drive me-1" style="color: var(--brand-primary-1);"></i> SQLite Database Size
+                                </div>
+                                <div id="db-metric-file-size" style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-top: 6px; font-family: var(--font-mono);">--</div>
+                                <div id="db-metric-file-path" style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Local SQLite File">audit_records.db</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-solar-panel me-1" style="color: #3b82f6;"></i> Audited Panels
+                                </div>
+                                <div id="db-metric-audited-panels" style="font-size: 28px; font-weight: 800; color: #3b82f6; margin-top: 6px; font-family: var(--font-mono);">0</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Registered inspection records</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-microchip me-1" style="color: #f59e0b;"></i> Defect Classifications
+                                </div>
+                                <div id="db-metric-defect-records" style="font-size: 28px; font-weight: 800; color: #f59e0b; margin-top: 6px; font-family: var(--font-mono);">0</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Individual cell defect coordinates</div>
+                            </div>
+                            <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow);">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-calendar-check me-1" style="color: #10b981;"></i> Daily Inspection Logs
+                                </div>
+                                <div id="db-metric-daily-records" style="font-size: 28px; font-weight: 800; color: #10b981; margin-top: 6px; font-family: var(--font-mono);">0</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Daily yield &amp; statistical entries</div>
+                            </div>
+                        </div>
+
+                        <!-- Table Breakdown & Engine Status -->
+                        <div class="card" style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 18px; padding: 22px; margin-bottom: 24px; box-shadow: var(--card-shadow);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-table-list text-blue" style="font-size: 16px;"></i>
+                                    <span style="font-size: 15px; font-weight: 700; color: var(--text-main);">Storage Tables Breakdown</span>
+                                </div>
+                                <span style="font-size: 12px; background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 9999px; font-weight: 700;">SQLite 3 • WAL Journaling</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main); font-family: var(--font-mono);">audited_panels</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Inspection metadata, decisions &amp; disputes</div>
+                                    </div>
+                                    <span id="tbl-cnt-audited-panels" style="font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--text-main);">--</span>
+                                </div>
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main); font-family: var(--font-mono);">cell_defect_classifications</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Individual cell coordinate defect types</div>
+                                    </div>
+                                    <span id="tbl-cnt-cell-defects" style="font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--text-main);">--</span>
+                                </div>
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main); font-family: var(--font-mono);">daily_panel_inspections</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Aggregated daily shift &amp; yield metrics</div>
+                                    </div>
+                                    <span id="tbl-cnt-daily-inspections" style="font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--text-main);">--</span>
+                                </div>
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main); font-family: var(--font-mono);">rework_logs</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Station repair logs and technician notes</div>
+                                    </div>
+                                    <span id="tbl-cnt-rework-logs" style="font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--text-main);">--</span>
+                                </div>
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main); font-family: var(--font-mono);">operators</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Factory line inspectors and roles</div>
+                                    </div>
+                                    <span id="tbl-cnt-operators" style="font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--text-main);">--</span>
+                                </div>
+                                <div style="background: var(--bg-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main); font-family: var(--font-mono);">app_settings</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Factory directory, SQL configuration, &amp; branding</div>
+                                    </div>
+                                    <span id="tbl-cnt-app-settings" style="font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--text-main);">--</span>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 16px; padding: 12px 16px; border-radius: 10px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); display: flex; align-items: center; gap: 12px;">
+                                <i class="fa-solid fa-shield-halved" style="color: #059669; font-size: 18px;"></i>
+                                <span style="font-size: 12px; color: #047857; font-weight: 600; line-height: 1.4;">
+                                    External EcoLAB SQL Server database (<code style="color: #065f46; font-weight: 700;">dbo.Tests</code>) is strictly read-only. Maintenance operations performed here affect ONLY the local LuminoAI SQLite storage.
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Danger Zone Card -->
+                        <div class="card" style="background: #ffffff; border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 18px; padding: 24px; box-shadow: 0 4px 20px -2px rgba(239, 68, 68, 0.08);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                <span style="background: rgba(239, 68, 68, 0.12); color: #dc2626; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> High-Privilege Danger Zone
+                                </span>
+                            </div>
+
+                            <h3 style="font-size: 17px; font-weight: 800; color: var(--text-main); margin: 0 0 6px 0;">Purge Local Audit Database</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 18px 0; max-width: 760px;">
+                                Permanently wipe all audited panel records, cell defect classifications, rework records, support tickets, and daily statistics from <code style="color: var(--text-main); font-weight: 700;">audit_records.db</code>.
+                                The database file is compacted using SQLite <code style="color: var(--text-main); font-weight: 700;">VACUUM</code> to shrink disk usage to minimum. Factory configuration and operator accounts remain preserved by default.
+                            </p>
+
+                            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                                <button type="button" class="btn" id="btn-open-purge-modal" style="background: #dc2626; color: #ffffff; font-weight: 700; border-radius: 12px; padding: 12px 22px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28); transition: all 0.2s ease;">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    <span>Purge Database (Password Required)...</span>
+                                </button>
+                                <span style="font-size: 12px; color: var(--text-muted);">
+                                    <i class="fa-solid fa-lock me-1"></i> Protected by administrator master password
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </section>
+            </div>
+        </main>
+
+        <!-- Universal Application Footer - Intellectual Property & Engineering Attribution -->
+        <footer class="app-universal-footer" id="app-universal-footer">
+            <div class="footer-content-inner">
+                <div class="footer-author-brand">
+                    <div class="footer-author-badge">
+                        <span class="footer-engineered-label">Designed &amp; Engineered</span>
+                        <span class="footer-author-name">By Ali Nasser</span>
+                    </div>
+                    <span class="footer-intellectual-notice">© LuminoAI • All Rights Reserved</span>
+                </div>
+                <div class="footer-links-group">
+                    <a href="https://www.ali-nasser.dev" target="_blank" rel="noopener noreferrer" class="footer-social-link link-website" title="Visit Personal Portfolio">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>ali-nasser.dev</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ali-nasser-b197b5279/" target="_blank" rel="noopener noreferrer" class="footer-social-link link-linkedin" title="Connect on LinkedIn">
+                        <i class="fa-brands fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://github.com/a360n" target="_blank" rel="noopener noreferrer" class="footer-social-link link-github" title="View Source on GitHub">
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+    </div>
+
+    <!-- MODAL: AUTO-APPROVED SERIAL NUMBERS -->
+    <div id="modal-auto-approved" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-surface, #ffffff); border-radius: 20px; width: 90%; max-width: 820px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid var(--card-border); overflow: hidden;">
+            <!-- Modal Header -->
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-elevated);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 18px;">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: var(--text-main);">Auto-Approved Certified Panels</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-muted);"><span id="auto-approved-count-label" style="font-weight: 700; color: #059669;">0</span> clean panels certified into registry (Grade A)</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-approved-serials" style="font-weight: 700; border-radius: 8px;">
+                        <i class="fa-solid fa-copy me-1"></i> Copy Serials
+                    </button>
+                    <button type="button" id="btn-close-auto-approved" style="background: transparent; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px 8px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="padding: 12px 24px; border-bottom: 1px solid var(--card-border); background: var(--bg-surface);">
+                <input type="text" id="input-search-approved" placeholder="Filter by Serial Number, Filename or Test ID..." style="width: 100%; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--card-border); font-size: 13px; font-family: var(--font-en); background: var(--bg-elevated); color: var(--text-main); outline: none;">
+            </div>
+
+            <!-- Table List Container -->
+            <div style="padding: 16px 24px; overflow-y: auto; flex: 1;" id="auto-approved-table-container">
+                <!-- Rendered dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SECURE DATABASE PURGE -->
+    <div id="modal-purge-db" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-surface, #ffffff); border-radius: 20px; width: 92%; max-width: 520px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); border: 1px solid var(--card-border); overflow: hidden;">
+            <!-- Modal Header -->
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-elevated);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 20px;">
+                        <i class="fa-solid fa-shield-virus"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: var(--text-main);">Authenticate Database Purge</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-muted);">Administrator authorization required to wipe records</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-purge-modal" style="background: transparent; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px 8px;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div style="padding: 22px 24px;">
+                <!-- Warning Notice -->
+                <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626; font-size: 18px; margin-top: 2px;"></i>
+                    <div style="font-size: 12px; color: #b91c1c; line-height: 1.5;">
+                        <strong style="display: block; margin-bottom: 2px;">Irreversible Operation</strong>
+                        This will permanently delete all panel inspection audits, cell defect classifications, rework records, and daily statistics. A SQLite <code style="color: #991b1b; font-weight: 700;">VACUUM</code> will be executed to compact storage.
+                    </div>
+                </div>
+
+                <!-- Password Input Group -->
+                <div style="margin-bottom: 18px;">
+                    <label for="input-purge-password" style="display: block; font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                        Administrator Master Password <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div style="position: relative;">
+                        <input type="password" id="input-purge-password" placeholder="Enter master password (e.g. admin)" autocomplete="off" style="width: 100%; padding: 11px 42px 11px 14px; border-radius: 10px; border: 1.5px solid var(--card-border); font-size: 14px; outline: none; background: var(--bg-elevated); color: var(--text-main); box-sizing: border-box;">
+                        <button type="button" id="btn-toggle-purge-pwd" title="Show/Hide Password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 14px;">
+                            <i class="fa-solid fa-eye" id="icon-toggle-purge-pwd"></i>
+                        </button>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>Default Master Password: <code style="color: var(--brand-primary-1); font-weight: 700;">admin</code> or <code style="color: var(--brand-primary-1); font-weight: 700;">lumino2026</code></span>
+                    </div>
+                </div>
+
+                <!-- Optional Reset Checkboxes -->
+                <div style="background: var(--bg-elevated); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Optional Reset Scope</div>
+                    <label style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-main); cursor: pointer; margin-bottom: 6px;">
+                        <input type="checkbox" id="check-purge-operators" style="accent-color: #dc2626; cursor: pointer;">
+                        <span>Also reset operator roster to factory defaults (Operator 1–4)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-main); cursor: pointer;">
+                        <input type="checkbox" id="check-purge-settings" style="accent-color: #dc2626; cursor: pointer;">
+                        <span>Also reset factory branding and production folder to defaults</span>
+                    </label>
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="purge-feedback" style="display: none; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 14px;"></div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="padding: 16px 24px; border-top: 1px solid var(--card-border); display: flex; align-items: center; justify-content: flex-end; gap: 12px; background: var(--bg-elevated);">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-purge-modal" style="font-weight: 700; border-radius: 10px; padding: 9px 18px;">
+                    Cancel
+                </button>
+                <button type="button" class="btn" id="btn-confirm-purge-db" style="background: #dc2626; color: #ffffff; font-weight: 700; border-radius: 10px; padding: 9px 20px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Authorize &amp; Purge Database</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/lumino_alerts.js?v=5.6.0"></script>
+    <script src="/static/operator_manager.js?v=5.5.0"></script>
+    <script src="/static/settings.js?v=5.5.0"></script>
+</body>
+</html>
+
