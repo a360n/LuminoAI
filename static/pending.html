@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuous Adjudication & Pending Review - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.6.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.6.0"></script>
+    <style>
+        .pending-workspace-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            margin-top: 18px;
+            height: calc(100vh - 160px);
+            min-height: 600px;
+        }
+
+        @media (max-width: 1024px) {
+            .pending-workspace-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .queue-sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .queue-sidebar-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--card-border);
+            background: var(--bg-surface);
+        }
+
+        .queue-sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .queue-item-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .queue-item-card:hover {
+            border-color: var(--brand-primary-1);
+            background: rgba(37, 99, 235, 0.03);
+            transform: translateY(-1px);
+        }
+
+        .queue-item-card.active {
+            border-color: var(--brand-primary-1);
+            background: rgba(37, 99, 235, 0.07);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .stage-workspace {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .stage-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--card-border);
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .stage-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stage-action-bar {
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-border);
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .dispute-item-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .dispute-cell-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .dispute-cell-thumb {
+            width: 140px;
+            height: 75px;
+            object-fit: contain !important;
+            border-radius: 8px;
+            border: 1.5px solid var(--card-border);
+            background: #000;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            cursor: zoom-in;
+        }
+
+        .dispute-cell-thumb:hover {
+            transform: scale(1.05);
+            border-color: var(--brand-primary-1);
+        }
+
+        .dispute-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .dispute-options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dispute-radio-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--card-border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-surface);
+            font-size: 13px;
+        }
+
+        .dispute-radio-label:hover {
+            border-color: var(--brand-primary-1);
+            background: rgba(37, 99, 235, 0.04);
+        }
+
+        .dispute-radio-label.selected-healthy {
+            border-color: #059669;
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            font-weight: 700;
+        }
+
+        .dispute-radio-label.selected-defective {
+            border-color: #e11d48;
+            background: rgba(225, 29, 72, 0.08);
+            color: #be123c;
+            font-weight: 700;
+        }
+
+        .defect-types-pill-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .defect-type-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .defect-type-btn:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .defect-type-btn.active {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+            color: #ffffff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img" id="header-brand-logo">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name" id="header-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Continuous Adjudication &amp; Backlog Clearance</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain"></i> AI Panel Inspection
+                </a>
+                <a href="/aipath" class="tab-btn">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitoring (AI Path)
+                </a>
+                <a href="/pending" class="tab-btn active">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Pending Review <span class="badge" id="nav-pending-badge" style="display:none; background:#f59e0b; color:#fff; padding:2px 6px; border-radius:10px; font-size:10px; margin-left:4px;">0</span>
+                </a>
+                <a href="/audit" class="tab-btn">
+                    <i class="fa-solid fa-clipboard-check"></i> Audited Panels (Registry)
+                </a>
+                <a href="/reports" class="tab-btn">
+                    <i class="fa-solid fa-file-invoice"></i> Daily Reports
+                </a>
+                <a href="/settings" class="tab-btn">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace Area -->
+        <main class="reports-container" style="max-width: 1600px; padding: 18px 24px;">
+            
+            <!-- Controls HUD -->
+            <div style="background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 20px;">
+                        <i class="fa-solid fa-forward-step"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
+                            Continuous Adjudication Workspace
+                            <span class="badge" id="hud-queue-counter" style="background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 12px; padding: 3px 10px; border-radius: 9999px;">0 Pending</span>
+                        </h2>
+                        <p style="margin: 3px 0 0 0; font-size: 12px; color: var(--text-muted);">
+                            Rapid auto-advance pipeline: Approving a panel instantly loads the next pending panel without returning to queue.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Order:</span>
+                        <select id="select-queue-sort" style="padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-surface); color: var(--text-main); outline: none;">
+                            <option value="newest" selected>Newest to Oldest (Default)</option>
+                            <option value="oldest">Oldest to Newest (FIFO)</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="text" id="input-queue-search" placeholder="Search serial / file..." style="padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--bg-surface); color: var(--text-main); outline: none; width: 180px;">
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-queue" style="font-weight: 700;">
+                        <i class="fa-solid fa-rotate me-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workspace Layout -->
+            <div class="pending-workspace-layout" id="workspace-layout">
+                
+                <!-- 1. LEFT SIDEBAR: PENDING QUEUE LIST -->
+                <aside class="queue-sidebar">
+                    <div class="queue-sidebar-header" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-list-check text-blue me-1"></i> Pending Modules
+                        </span>
+                        <span id="sidebar-queue-progress" style="font-size: 12px; font-weight: 700; color: var(--brand-primary-1);">0 / 0</span>
+                    </div>
+                    <div class="queue-sidebar-list" id="queue-sidebar-list">
+                        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                            <p style="margin-top: 10px; font-size: 13px;">Loading pending queue...</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- 2. RIGHT WORKSPACE: ACTIVE ADJUDICATION STAGE -->
+                <section class="stage-workspace" id="stage-workspace">
+                    
+                    <!-- Stage Header -->
+                    <div class="stage-header" id="stage-header">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 12px; font-weight: 800; color: var(--brand-primary-1); background: rgba(37, 99, 235, 0.1); border: 1px solid rgba(37, 99, 235, 0.25); padding: 4px 10px; border-radius: 8px; font-family: var(--font-mono);" id="stage-serial">
+                                    --
+                                </span>
+                                <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);" id="stage-filename">
+                                    --
+                                </span>
+                            </div>
+
+                            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;" id="stage-machine-time" title="Machine Inspection Time from SQL Server">
+                                <i class="fa-solid fa-industry text-blue"></i>
+                                <span>--</span>
+                            </span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="stage-queue-position-badge" style="font-size: 12px; font-weight: 800; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 9999px;">
+                                Panel 1 of --
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Stage Body (Image + Discrepancy Cards) -->
+                    <div class="stage-body" id="stage-body">
+                        
+                        <!-- Panel Image Viewer Card -->
+                        <div style="background: #0f172a; border-radius: 12px; overflow: hidden; border: 1px solid #334155; position: relative; min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                            <img id="stage-panel-img" src="" alt="Panel Infrared View" style="max-height: 380px; width: 100%; object-fit: contain; display: block;" onerror="this.style.display='none'">
+                            <div id="stage-panel-placeholder" style="color: #94a3b8; font-size: 13px; text-align: center; padding: 20px;">
+                                <i class="fa-solid fa-image fa-2x" style="margin-bottom: 8px; opacity: 0.5;"></i>
+                                <div>Loading panel high-resolution imagery...</div>
+                            </div>
+                        </div>
+
+                        <!-- Defect Concordance & Adjudication List -->
+                        <div id="stage-adjudication-container" style="display: flex; flex-direction: column; gap: 16px;">
+                            <!-- Dynamically populated cell adjudication items -->
+                        </div>
+
+                    </div>
+
+                    <!-- Sticky Bottom Action Bar -->
+                    <div class="stage-action-bar" id="stage-action-bar">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="stage-decision-hint" style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+                                Adjudicate all disputed cells to advance.
+                            </span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button type="button" class="btn btn-secondary" id="btn-prev-panel" title="View previous panel in queue">
+                                <i class="fa-solid fa-arrow-left me-1"></i> Previous
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btn-skip-panel" title="Skip to next panel without saving">
+                                Skip <i class="fa-solid fa-arrow-right ms-1"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary" id="btn-confirm-next" style="background: linear-gradient(135deg, #0284c7, #0369a1); font-weight: 800; padding: 9px 24px; border-radius: 9999px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-forward-step"></i>
+                                <span>Confirm Decision &amp; Advance to Next Panel</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- Empty Celebration Screen (When 0 Pending) -->
+            <div id="empty-queue-celebration" style="display: none; background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 20px; padding: 60px 30px; text-align: center; margin-top: 24px; box-shadow: var(--card-shadow);">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 38px; margin: 0 auto 20px auto;">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 style="font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">All Pending Panels Adjudicated!</h3>
+                <p style="font-size: 14px; color: var(--text-muted); max-width: 520px; margin: 0 auto 28px auto; line-height: 1.6;">
+                    The pending review backlog is 100% cleared. All panel classifications and concordance metrics have been certified and recorded in the audit database.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+                    <a href="/reports" class="btn btn-primary" style="padding: 10px 22px; font-weight: 700;">
+                        <i class="fa-solid fa-file-invoice me-1"></i> Go to Daily Reports
+                    </a>
+                    <a href="/audit" class="btn btn-secondary" style="padding: 10px 22px; font-weight: 700;">
+                        <i class="fa-solid fa-clipboard-check me-1"></i> Audited Registry
+                    </a>
+                    <a href="/aipath" class="btn btn-secondary" style="padding: 10px 22px; font-weight: 700;">
+                        <i class="fa-solid fa-satellite-dish me-1"></i> Live Monitoring
+                    </a>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Universal Footer -->
+        <footer class="app-universal-footer" id="app-universal-footer">
+            <div class="footer-content-inner">
+                <div class="footer-author-brand">
+                    <div class="footer-author-badge">
+                        <span class="footer-engineered-label">Designed &amp; Engineered</span>
+                        <span class="footer-author-name">By Ali Nasser</span>
+                    </div>
+                    <span class="footer-intellectual-notice">© LuminoAI • All Rights Reserved</span>
+                </div>
+                <div class="footer-links-group">
+                    <a href="https://www.ali-nasser.dev" target="_blank" rel="noopener noreferrer" class="footer-social-link link-website" title="Visit Personal Portfolio">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>ali-nasser.dev</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ali-nasser-b197b5279/" target="_blank" rel="noopener noreferrer" class="footer-social-link link-linkedin" title="Connect on LinkedIn">
+                        <i class="fa-brands fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://github.com/a360n" target="_blank" rel="noopener noreferrer" class="footer-social-link link-github" title="View Source on GitHub">
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="/static/lumino_alerts.js?v=5.6.0"></script>
+    <script src="/static/operator_manager.js?v=5.6.0"></script>
+    <script src="/static/pending.js?v=5.6.0"></script>
+</body>
+</html>

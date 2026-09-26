@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audited Panels Registry - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container">
+                    <img src="/static/default_globe_logo.svg?v=1" alt="Factory Logo" class="brand-logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">LuminoAI Solar Platform</h1>
+                    <p class="subtitle">Reference Quality Auditing & Model Adjudication</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/ai" class="tab-btn">
+                    <i class="fa-solid fa-brain"></i> AI Panel Inspection
+                </a>
+                <a href="/aipath" class="tab-btn">
+                    <i class="fa-solid fa-satellite-dish"></i> Live Monitoring (AI Path)
+                </a>
+                <a href="/pending" class="tab-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Pending Review
+                </a>
+                <a href="/audit" class="tab-btn active">
+                    <i class="fa-solid fa-clipboard-check"></i> Audited Panels (Registry)
+                </a>
+                <a href="/reports" class="tab-btn">
+                    <i class="fa-solid fa-file-invoice"></i> Daily Reports
+                </a>
+                <a href="/settings" class="tab-btn">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+                <a href="/qrcodes" class="tab-btn">
+                    <i class="fa-solid fa-qrcode"></i> QR Portals
+                </a>
+                <a href="/" class="tab-btn">
+                    <i class="fa-solid fa-crop-simple"></i> Calibration Studio
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <div class="operator-selector-wrapper">
+                    <span class="operator-selector-label">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Operator:</span>
+                    </span>
+                    <select class="operator-dropdown-select" id="header-operator-select" title="Select current operator"></select>
+                </div>
+
+                <button class="btn btn-secondary" id="btn-refresh-audit">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-main" style="padding: 28px 24px; max-width: 1440px; margin: 0 auto; width: 100%;">
+            
+            <!-- Page Header / HUD -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+                <div>
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-chart-line text-blue"></i> Quality Audit & Calibration Registry
+                    </h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">
+                        Ground-truth adjudication ledger evaluating AI model precision vs operator detection.
+                    </p>
+                </div>
+                <div class="hud-chip">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span id="audit-last-updated" style="font-size: 12px; color: var(--text-muted);">Syncing...</span>
+                </div>
+            </div>
+
+            <!-- 1. DYNAMIC AUDITED SCOREBOARD (LIVE TELEMETRY BASED ON ACTIVE FILTERS) -->
+            <div class="audit-executive-board" id="global-stats-grid">
+                
+                <!-- Top Row: 4 Dynamic KPIs -->
+                <div class="audit-kpi-row">
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-solar-panel text-blue"></i> Filtered Modules</span>
+                        <div class="kpi-number" id="stat-total-audited">0</div>
+                        <span class="kpi-desc">Matching Active Criteria</span>
+                    </div>
+
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-circle-check text-green"></i> Clean / Healthy</span>
+                        <div class="kpi-number text-green" id="stat-clean-count">0 <span style="font-size: 14px; font-weight: 600; opacity: 0.8;" id="stat-clean-pct">(0%)</span></div>
+                        <span class="kpi-desc">Zero Confirmed Anomalies</span>
+                    </div>
+
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i> Defective Panels</span>
+                        <div class="kpi-number" style="color: #ef4444;" id="stat-defective-count">0 <span style="font-size: 14px; font-weight: 600; opacity: 0.8;" id="stat-defective-pct">(0%)</span></div>
+                        <span class="kpi-desc">Confirmed Cell Anomalies</span>
+                    </div>
+
+                    <div class="audit-kpi-col">
+                        <span class="kpi-label"><i class="fa-solid fa-percent text-gold"></i> Quality Yield</span>
+                        <div class="kpi-number text-gold" id="stat-quality-yield">100%</div>
+                        <span class="kpi-desc">Clean Module Ratio</span>
+                    </div>
+                </div>
+
+                <!-- Bottom Row: Dynamic Defect Breakdown Pill Strip -->
+                <div class="audit-cases-strip" id="audit-defect-breakdown-strip">
+                    <div class="audit-cases-title">
+                        <i class="fa-solid fa-tags text-blue"></i> Defect Breakdown:
+                    </div>
+                    <div class="audit-cases-chips" id="stat-defect-chips-container">
+                        <!-- Rendered dynamically: Crack, Mini-crack, Short, Open-ribbon, Missing ribbon, Impurities -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 2. MULTI-DIMENSIONAL AUDIT FILTER & SEARCH TOOLBAR -->
+            <div class="audit-filter-toolbar" style="border-radius: 22px; padding: 18px 22px; flex-direction: column; align-items: stretch; gap: 14px;">
+                
+                <!-- Row 1: Instant Search & Reset -->
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between;">
+                    <div class="audit-search-box" style="flex: 1; min-width: 260px;">
+                        <input type="text" id="audit-search-input" class="text-input" placeholder="🔍 Instant search by serial number, filename, test ID, or operator..." style="width: 100%; padding: 10px 20px; border-radius: 9999px; background: var(--bg-surface); border: 1px solid var(--card-border); color: var(--text-main); font-size: 13px;">
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-filters" style="border-radius: 9999px; padding: 7px 18px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reset Filters</span>
+                    </button>
+                </div>
+
+                <!-- Row 2: Date Range (From & To) and Shift Toggle -->
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-top: 1px solid var(--card-border); padding-top: 12px;">
+                    <!-- Date Range -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-regular fa-calendar text-blue"></i> Date Range:
+                        </span>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label for="audit-date-from" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">From:</label>
+                            <input type="date" id="audit-date-from" class="text-input" style="padding: 5px 10px; border-radius: 8px; font-size: 12px; font-family: var(--font-mono); border: 1px solid var(--card-border); background: var(--bg-surface); color: var(--text-main);">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label for="audit-date-to" style="font-size: 11px; font-weight: 700; color: var(--text-muted);">To:</label>
+                            <input type="date" id="audit-date-to" class="text-input" style="padding: 5px 10px; border-radius: 8px; font-size: 12px; font-family: var(--font-mono); border: 1px solid var(--card-border); background: var(--bg-surface); color: var(--text-main);">
+                        </div>
+                        <button type="button" id="btn-clear-dates" class="btn btn-secondary btn-sm" style="padding: 5px 10px; border-radius: 8px; font-size: 11px;" title="Clear Date Range">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Shift Multi-Toggle -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-business-time text-blue"></i> Shifts:
+                        </span>
+                        <div class="audit-filter-pill-group" id="audit-shift-buttons">
+                            <button type="button" class="filter-pill-btn active" data-shift="all">All Shifts</button>
+                            <button type="button" class="filter-pill-btn" data-shift="shift_1"><i class="fa-solid fa-sun me-1"></i> Morning</button>
+                            <button type="button" class="filter-pill-btn" data-shift="shift_2"><i class="fa-solid fa-cloud-sun me-1"></i> Evening</button>
+                            <button type="button" class="filter-pill-btn" data-shift="shift_3"><i class="fa-solid fa-moon me-1"></i> Night</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Outcome Status & Defect Types Multi-Select -->
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-top: 1px solid var(--card-border); padding-top: 12px;">
+                    <!-- Outcome Status -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-shield-halved text-blue"></i> Status:
+                        </span>
+                        <div class="audit-filter-pill-group" id="audit-status-buttons">
+                            <button type="button" class="filter-pill-btn active" data-status="all">All Panels</button>
+                            <button type="button" class="filter-pill-btn" data-status="clean"><i class="fa-solid fa-circle-check text-green me-1"></i> Clean (Healthy)</button>
+                            <button type="button" class="filter-pill-btn" data-status="defective"><i class="fa-solid fa-triangle-exclamation text-red me-1"></i> Defective</button>
+                        </div>
+                    </div>
+
+                    <!-- Defect Types Multi-Select Pills -->
+                    <div id="defect-types-filter-wrapper" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-bug text-blue"></i> Defect Types:
+                        </span>
+                        <div class="audit-filter-pill-group" id="audit-defect-type-buttons">
+                            <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Crack">Crack</button>
+                            <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Mini-crack">Mini-crack</button>
+                            <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Short">Short</button>
+                            <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Open-ribbon">Open-ribbon</button>
+                            <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Missing ribbon">Missing ribbon</button>
+                            <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Impurities">Impurities</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 3. AUDITED PANELS STREAM -->
+            <div class="card" style="border-radius: 22px; padding: 24px; background: var(--bg-card); border: 1px solid var(--card-border); box-shadow: var(--card-shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; margin-bottom: 18px;">
+                    <h3 style="font-size: 16px; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-list-check text-blue"></i> Audited Panels Stream
+                        <span class="badge" id="audit-count-badge" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; font-size: 12px; border-radius: 9999px; padding: 2px 10px;">0</span>
+                    </h3>
+                </div>
+
+                <div id="audit-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x text-blue"></i>
+                        <p style="margin-top: 12px;">Loading audited panels registry...</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Detailed Modal for Audited Panel -->
+        <div class="global-loading-overlay" id="audit-detail-modal" style="display: none; align-items: center; justify-content: center; z-index: 9999; background: var(--modal-backdrop); backdrop-filter: blur(12px);">
+            <div class="card" style="max-width: 1040px; width: 94%; max-height: 92vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 24px; padding: 28px; position: relative; box-shadow: var(--card-shadow);">
+                
+                <button id="btn-close-audit-modal" style="position: absolute; top: 22px; right: 22px; background: var(--bg-elevated); border: 1px solid var(--card-border); width: 36px; height: 36px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <!-- Modal Header -->
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px;">
+                    <div class="logo-icon" style="width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe;">
+                        <i class="fa-solid fa-microscope text-blue fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 800;" id="modal-panel-title">Panel Audit & Inspection Details</h3>
+                        <div style="font-size: 12px; margin-top: 3px;" id="modal-panel-subtitle">--</div>
+                    </div>
+                </div>
+
+                <!-- Match Status Banner -->
+                <div id="modal-match-banner" style="padding: 14px 20px; border-radius: 16px; margin-bottom: 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: space-between;">
+                    <span id="modal-match-text">--</span>
+                    <span id="modal-match-badge" class="badge" style="border-radius: 9999px; padding: 4px 14px;">--</span>
+                </div>
+
+                <!-- Full Panel Interactive Viewport (Item 11: Zoom, Rotate, Reset) -->
+                <div style="margin-bottom: 22px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <h5 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-solar-panel text-blue"></i> Full Photovoltaic Module High-Resolution Image:
+                        </h5>
+                        <span style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-hand-pointer me-1"></i> Drag to pan • Scroll to zoom</span>
+                    </div>
+                    <div class="panel-viewport-container" id="modal-panel-viewport">
+                        <div class="panel-viewport-toolbar">
+                            <button type="button" class="panel-viewport-btn" id="btn-panel-zoom-in" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                            <button type="button" class="panel-viewport-btn" id="btn-panel-zoom-out" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                            <span class="panel-viewport-badge" id="panel-zoom-badge">100%</span>
+                            <button type="button" class="panel-viewport-btn" id="btn-panel-rotate" title="Rotate 90° Clockwise"><i class="fa-solid fa-rotate-right"></i></button>
+                            <button type="button" class="panel-viewport-btn" id="btn-panel-reset" title="Reset View"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                        </div>
+                        <img id="modal-panel-img" class="panel-viewport-img" src="" alt="Full Panel View">
+                    </div>
+                </div>
+
+                <!-- Ground Truth Confirmed Defective Cells Tags -->
+                <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 16px; padding: 16px 20px; margin-bottom: 22px;">
+                    <h5 style="margin: 0 0 10px 0; color: var(--accent-red); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;"><i class="fa-solid fa-circle-xmark me-1"></i> Ground Truth Confirmed Defective Cells:</h5>
+                    <div id="modal-confirmed-defects-tags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">--</span>
+                    </div>
+                </div>
+
+                <!-- Defective & Disputed Cells Gallery (Item 12: High-res Cell Crops with Zoom/Rotate) -->
+                <div style="margin-bottom: 22px;" id="modal-cells-gallery-section">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h5 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-images text-blue"></i> High-Resolution Defective Cell Inspects:
+                        </h5>
+                        <span style="font-size: 11px; color: var(--text-muted);">Click cell card to enlarge in full detail</span>
+                    </div>
+                    <div class="audit-cells-gallery" id="modal-defective-cells-gallery">
+                        <!-- Populated dynamically with high-res cell crops -->
+                    </div>
+                </div>
+
+                <!-- Disputed Cells Detailed Table -->
+                <div style="margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-scale-balanced text-blue me-1"></i> Disputed Cells Adjudication Table:</h5>
+                    <div id="modal-disputes-table-container" style="overflow-x: auto; border-radius: 16px; border: 1px solid var(--card-border);">
+                        <!-- Table rendered dynamically -->
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 14px;">
+                    <button class="btn btn-secondary" id="btn-close-modal-bottom" style="border-radius: 9999px; padding: 8px 24px;">Close</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Cell Lightbox Modal for Ultra-Zoom Cell Inspection -->
+        <div class="global-loading-overlay" id="cell-lightbox-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);">
+            <div class="card" style="max-width: 680px; width: 90%; background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 20px; padding: 20px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px;">
+                    <h4 id="cell-lightbox-title" style="margin: 0; font-size: 16px; font-weight: 800; color: var(--text-main);">Cell Detail Inspection</h4>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-cell-lb-zoom-in" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-cell-lb-zoom-out" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-cell-lb-rotate" title="Rotate 90°"><i class="fa-solid fa-rotate-right"></i></button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-cell-lb-reset" title="Reset"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="cell-lightbox-close" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <div style="width: 100%; height: 360px; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; cursor: grab;" id="cell-lb-viewport">
+                    <img id="cell-lightbox-img" src="" alt="Cell High-Res" style="max-width: 90%; max-height: 90%; object-fit: contain; transition: transform 0.12s ease-out; transform-origin: center center; pointer-events: none;">
+                </div>
+                <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted);">
+                    <span id="cell-lightbox-subtitle">Ground Truth: Defective</span>
+                    <span id="cell-lb-zoom-badge" style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-primary-1);">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Universal Application Footer - Intellectual Property & Engineering Attribution -->
+        <footer class="app-universal-footer" id="app-universal-footer">
+            <div class="footer-content-inner">
+                <div class="footer-author-brand">
+                    <div class="footer-author-badge">
+                        <span class="footer-engineered-label">Designed &amp; Engineered</span>
+                        <span class="footer-author-name">By Ali Nasser</span>
+                    </div>
+                    <span class="footer-intellectual-notice">© LuminoAI • All Rights Reserved</span>
+                </div>
+                <div class="footer-links-group">
+                    <a href="https://www.ali-nasser.dev" target="_blank" rel="noopener noreferrer" class="footer-social-link link-website" title="Visit Personal Portfolio">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>ali-nasser.dev</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ali-nasser-b197b5279/" target="_blank" rel="noopener noreferrer" class="footer-social-link link-linkedin" title="Connect on LinkedIn">
+                        <i class="fa-brands fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://github.com/a360n" target="_blank" rel="noopener noreferrer" class="footer-social-link link-github" title="View Source on GitHub">
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="/static/operator_manager.js?v=5.4.0"></script>
+    <script src="/static/audit.js?v=5.4.0"></script>
+</body>
+</html>
+

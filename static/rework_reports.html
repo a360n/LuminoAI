@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Module Rework Reports - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.6.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.6.0"></script>
+    <style>
+        .reports-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+        }
+
+        .reports-table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            margin-top: 18px;
+        }
+
+        .reports-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .reports-data-table th {
+            background: var(--bg-surface-alt, rgba(0, 0, 0, 0.02));
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .reports-data-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .reports-data-table tbody tr:hover {
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .printable-sheet {
+            background: #ffffff;
+            color: #1e293b;
+            border-radius: 16px;
+            padding: 40px;
+            margin: 0 auto;
+            max-width: 1080px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sheet-header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #059669;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        .sheet-logo-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sheet-logo-img {
+            max-height: 54px;
+            max-width: 160px;
+            object-fit: contain;
+        }
+
+        .sheet-factory-title h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .sheet-factory-title p {
+            font-size: 12px;
+            color: #64748b;
+            margin: 3px 0 0 0;
+            font-weight: 600;
+        }
+
+        .sheet-meta-card {
+            text-align: right;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .sheet-meta-card .report-date-badge {
+            font-size: 16px;
+            font-weight: 800;
+            color: #059669;
+            margin-bottom: 4px;
+        }
+
+        .sheet-section-title {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: #047857;
+            margin: 24px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 4px solid #059669;
+            padding-left: 10px;
+        }
+
+        .sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+            margin-top: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sheet-table th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            letter-spacing: 0.4px;
+        }
+
+        .sheet-table td {
+            padding: 9px 12px;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .sheet-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .sheet-table-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .badge-repaired {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .badge-cell-coord {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            font-family: var(--font-mono);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+
+        .sheet-page-break {
+            page-break-before: always;
+            break-before: page;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 2px dashed #cbd5e1;
+        }
+
+        /* Cover Pages */
+        .report-cover-page {
+            min-height: 840px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 20px;
+            box-sizing: border-box;
+            background: #ffffff;
+        }
+
+        .report-back-cover-page {
+            min-height: 840px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 20px;
+            box-sizing: border-box;
+            background: #ffffff;
+            page-break-before: always;
+            break-before: page;
+            border-top: 2px dashed #cbd5e1;
+            margin-top: 36px;
+            padding-top: 32px;
+        }
+
+        /* Full Color Printing Preservation */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm 12mm 14mm 12mm;
+            }
+
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                font-size: 9.5pt !important;
+                margin-bottom: 14mm !important;
+            }
+
+            .app-header,
+            .reports-controls-bar,
+            .days-list-view,
+            .report-viewer-toolbar,
+            .app-universal-footer,
+            .btn {
+                display: none !important;
+            }
+
+            .reports-container {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            #rework-report-view-container {
+                display: block !important;
+            }
+
+            .printable-sheet {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            .report-cover-page {
+                border: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                padding: 6mm 4mm 12mm 4mm !important;
+                margin: 0 !important;
+                min-height: 260mm !important;
+                height: 260mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+
+            .report-back-cover-page {
+                border: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                padding: 6mm 4mm 12mm 4mm !important;
+                margin: 0 !important;
+                min-height: 260mm !important;
+                height: 260mm !important;
+                page-break-before: always !important;
+                break-before: page !important;
+            }
+
+            .sheet-page-break {
+                page-break-before: always !important;
+                break-before: page !important;
+                border-top: none !important;
+                margin-top: 0 !important;
+                padding-top: 4mm !important;
+            }
+
+            .sheet-table {
+                page-break-inside: auto;
+            }
+
+            .sheet-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .sheet-table th {
+                background: #f1f5f9 !important;
+                color: #1e293b !important;
+            }
+        }
+    </style>
+</head>
+<body class="mode-page">
+    <div class="app-shell">
+        <!-- Universal App Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <a href="/" class="app-brand" style="text-decoration: none;">
+                    <div class="brand-icon-wrapper" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                        <i class="fa-solid fa-wrench"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-title">Lumino<span class="text-accent" style="color: #10b981;">AI</span></span>
+                        <span class="brand-subtitle">Solar Rework Dossier</span>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="header-center">
+                <div class="mode-tabs">
+                    <a href="/" class="tab-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-solar-panel"></i> Live Inspection
+                    </a>
+                    <a href="/aipath" class="tab-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-microchip"></i> AI Review Path
+                    </a>
+                    <a href="/reports" class="tab-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-file-invoice"></i> Daily Reports
+                    </a>
+                    <a href="/rework" class="tab-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-hammer"></i> Rework Station
+                    </a>
+                    <a href="/rework-reports" class="tab-btn active" style="text-decoration: none;">
+                        <i class="fa-solid fa-certificate"></i> Rework Reports
+                    </a>
+                    <a href="/settings" class="tab-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-sliders"></i> Settings
+                    </a>
+                </div>
+            </nav>
+
+            <div class="header-right">
+                <button type="button" class="btn btn-secondary btn-icon" id="theme-toggle-btn" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="reports-container">
+            <!-- Controls & Action Header -->
+            <div class="reports-controls-bar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <button type="button" class="btn btn-secondary" id="btn-back-to-ledger" style="display: none;">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Ledger
+                    </button>
+                    <div>
+                        <h2 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-certificate" style="color: #059669;"></i>
+                            <span id="page-title-text">Rework &amp; Repair Reports Ledger</span>
+                        </h2>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 3px 0 0 0;" id="page-subtitle-text">
+                            Official daily certification dossiers for solar modules remediated and signed off at rework stations.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="date-picker-container" style="display: flex; align-items: center; gap: 8px;">
+                        <label for="rework-report-date-picker" style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Select Date:</label>
+                        <input type="date" id="rework-report-date-picker" class="form-input" style="height: 38px; width: 160px; font-weight: 600;">
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="btn-refresh-rework-reports" title="Refresh Reports">
+                        <i class="fa-solid fa-rotate"></i> Refresh
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-print-rework-report" style="background: #059669; display: none;">
+                        <i class="fa-solid fa-print"></i> Print / Save as PDF
+                    </button>
+                    <a href="/rework" class="btn btn-secondary" style="text-decoration: none;">
+                        <i class="fa-solid fa-hammer"></i> Open Rework Station
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ledger View (Days List) -->
+            <div class="days-list-view" id="rework-days-list-view">
+                <div class="reports-table-card">
+                    <table class="reports-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 18%;">Production Date</th>
+                                <th style="width: 22%;">Modules Repaired</th>
+                                <th style="width: 20%;">Total Repair Sign-Offs</th>
+                                <th style="width: 24%;">Active Repair Specialists</th>
+                                <th style="width: 16%; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rework-ledger-tbody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                    <i class="fa-solid fa-spinner fa-spin me-2"></i> Loading daily rework records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Report Viewer View (Sheets Container) -->
+            <div id="rework-report-view-container" style="display: none;">
+                <div class="printable-sheet" id="rework-printable-sheet">
+                    <!-- Dynamic multi-page dossier generated by rework_reports.js -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/rework_reports.js?v=5.6.0"></script>
+</body>
+</html>

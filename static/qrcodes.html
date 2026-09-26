@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile & Tablet QR Gateways - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+    <script src="/static/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --qr-primary: #0284c7;
+            --qr-card-radius: 20px;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.dark-theme {
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+
+        .qr-hub-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px 80px 20px;
+        }
+
+        /* Top Bar */
+        .qr-header {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--qr-card-radius);
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .qr-header {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        .qr-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .qr-logo-badge {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+        }
+
+        .qr-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qr-nav-btn {
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        body.dark-theme .qr-nav-btn {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .qr-nav-btn:hover {
+            border-color: var(--qr-primary);
+            color: var(--qr-primary);
+        }
+
+        /* Network Adapter Selector */
+        .network-selector-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--qr-card-radius);
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        body.dark-theme .network-selector-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .ip-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: #e0f2fe;
+            color: #0369a1;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        body.dark-theme .ip-badge {
+            background: rgba(2, 132, 199, 0.2);
+            color: #38bdf8;
+        }
+
+        /* 3 Portals Grid */
+        .portals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .portal-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--qr-card-radius);
+            padding: 24px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .portal-card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        }
+
+        .portal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+        }
+
+        .portal-icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .portal-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 0 6px 0;
+            color: inherit;
+        }
+
+        .portal-desc {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+            margin: 0 0 18px 0;
+        }
+
+        body.dark-theme .portal-desc {
+            color: #94a3b8;
+        }
+
+        .portal-port-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+
+        body.dark-theme .portal-port-tag {
+            background: #0f172a;
+            color: #cbd5e1;
+        }
+
+        .portal-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        .btn-qr-modal {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.15s;
+        }
+
+        .btn-launch-direct {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #334155;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        body.dark-theme .btn-launch-direct {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .btn-launch-direct:hover {
+            border-color: var(--qr-primary);
+        }
+
+        /* QR Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .qr-modal-box {
+            background: #ffffff;
+            border-radius: 24px;
+            max-width: 440px;
+            width: 100%;
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        body.dark-theme .qr-modal-box {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .qr-canvas-wrapper {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .qr-url-box {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 14px;
+            word-break: break-all;
+            box-sizing: border-box;
+        }
+
+        body.dark-theme .qr-url-box {
+            background: #0f172a;
+            border-color: #334155;
+            color: #38bdf8;
+        }
+
+        .btn-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="qr-hub-container">
+        <!-- Top App Bar -->
+        <header class="qr-header">
+            <div class="qr-brand">
+                <div class="qr-logo-badge">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div>
+                    <h1 style="font-size: 19px; font-weight: 800; margin: 0;">Mobile &amp; Tablet QR Gateways</h1>
+                    <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Dedicated wireless portal endpoints for factory floor operations</p>
+                </div>
+            </div>
+            <div class="qr-nav-links">
+                <a href="/aipath" class="qr-nav-btn">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>Live Watcher</span>
+                </a>
+                <a href="/settings" class="qr-nav-btn">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Network Interface Card -->
+        <div class="network-selector-card">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-network-wired text-blue" style="font-size: 18px;"></i>
+                <div>
+                    <span style="font-size: 13px; font-weight: 700;">Factory LAN Host Address:</span>
+                    <span class="ip-badge" id="host-ip-badge">
+                        <i class="fa-solid fa-wifi"></i>
+                        <span id="host-ip-text">Detecting IP...</span>
+                    </span>
+                </div>
+            </div>
+            <div style="font-size: 12px; color: #64748b;">
+                <i class="fa-solid fa-shield-halved me-1 text-success"></i> Handheld devices on same LAN can connect directly without setup.
+            </div>
+        </div>
+
+        <!-- 3 Portals Grid -->
+        <div class="portals-grid">
+            <!-- 1. Maintenance & Rework Portal -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon-box" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <h2 class="portal-title">Maintenance &amp; Rework Station</h2>
+                    <p class="portal-desc">
+                        Interactive repair ledger for technicians. Scan panel serial, view pre-lamination defect locations, mark cells repaired, and re-inspect modules.
+                    </p>
+                    <div class="portal-port-tag">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Port 8005 (HTTP) / 8006 (HTTPS)</span>
+                    </div>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-qr-modal" id="btn-qr-rework" style="background: #059669;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </button>
+                    <a href="/rework" target="_blank" class="btn-launch-direct" title="Launch Station">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. Before-Buzzer Portal -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon-box" style="background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <h2 class="portal-title">Before-Buzzer Station</h2>
+                    <p class="portal-desc">
+                        Real-time pre-soldering defect monitor for busbar line engineers. Auto-updating feed of EcoLAB test anomalies, defect locations, and cell images.
+                    </p>
+                    <div class="portal-port-tag">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Port 8005 (HTTP) / 8006 (HTTPS)</span>
+                    </div>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-qr-modal" id="btn-qr-buzzer" style="background: #d97706;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </button>
+                    <a href="/before-buzzer" target="_blank" class="btn-launch-direct" title="Launch Station">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. Human-Vision Portal -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon-box" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <h2 class="portal-title">Human-Vision Station</h2>
+                    <p class="portal-desc">
+                        Thermal lamination visual quality inspection. Scan defective panels, verify pre-lamination adjudication status, record multi-defects, and take photos.
+                    </p>
+                    <div class="portal-port-tag">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Port 8005 (HTTP) / 8006 (HTTPS)</span>
+                    </div>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-qr-modal" id="btn-qr-hv" style="background: #2563eb;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </button>
+                    <a href="/human-vision" target="_blank" class="btn-launch-direct" title="Launch Station">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. Post-Lam EcoLAB Station -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon-box" style="background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe;">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <h2 class="portal-title">Post-Lam EcoLAB Station</h2>
+                    <p class="portal-desc">
+                        Post-lamination EL inspection. Zero-disk image streaming in RAM, 144-cell matrix review, operator adjudication, and thermal defect delta comparison.
+                    </p>
+                    <div class="portal-port-tag">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Port 8005 (HTTP) / 8006 (HTTPS)</span>
+                    </div>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-qr-modal" id="btn-qr-postlam" style="background: #7c3aed;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </button>
+                    <a href="/post-lam" target="_blank" class="btn-launch-direct" title="Launch Station">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 5. EcoSUN Solar Simulator Station -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon-box" style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5;">
+                        <i class="fa-solid fa-sun"></i>
+                    </div>
+                    <h2 class="portal-title">EcoSUN Simulator Station</h2>
+                    <p class="portal-desc">
+                        Live solar flasher monitor. Inspects IV curve performance, Pmax, Voc, Isc, Fill Factor, Module Efficiency, and electrical grade classification.
+                    </p>
+                    <div class="portal-port-tag">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Port 8005 (HTTP) / 8006 (HTTPS)</span>
+                    </div>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-qr-modal" id="btn-qr-ecosun" style="background: #ea580c;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </button>
+                    <a href="/ecosun" target="_blank" class="btn-launch-direct" title="Launch Station">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 6. EcoHIPOT Electrical Safety Station -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon-box" style="background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h2 class="portal-title">EcoHIPOT Safety Station</h2>
+                    <p class="portal-desc">
+                        High-voltage electrical safety monitor. Inspects dielectric breakdown voltage, insulation resistance (Riso), leakage current, and ground continuity.
+                    </p>
+                    <div class="portal-port-tag">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Port 8005 (HTTP) / 8006 (HTTPS)</span>
+                    </div>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-qr-modal" id="btn-qr-ecohipot" style="background: #0284c7;">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </button>
+                    <a href="/ecohipot" target="_blank" class="btn-launch-direct" title="Launch Station">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scannable High-Resolution QR Modal -->
+    <div id="qr-modal" class="modal-overlay">
+        <div class="qr-modal-box">
+            <button class="btn-modal-close" id="btn-close-qr-modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div style="font-size: 18px; font-weight: 800; margin-top: 6px;" id="qr-modal-title">Station Title</div>
+            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;" id="qr-modal-subtitle">Point your phone or iPad camera at this QR code</p>
+
+            <div class="qr-canvas-wrapper" id="qr-code-canvas-box"></div>
+
+            <div class="qr-url-box" id="qr-url-text">http://...</div>
+
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button id="btn-copy-url" class="qr-nav-btn" style="flex: 1; justify-content: center; cursor: pointer;">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Copy URL</span>
+                </button>
+                <a id="btn-open-url" href="" target="_blank" class="qr-nav-btn" style="flex: 1; justify-content: center; background: #2563eb; color: #fff; border: none;">
+                    <i class="fa-solid fa-external-link"></i>
+                    <span>Open in Tab</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/qrcodes.js?v=1.0.0"></script>
+</body>
+</html>

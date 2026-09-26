@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Post-Lamination Defective Registry - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+
+    <style>
+        :root {
+            --hva-primary: #2563eb;
+            --hva-danger: #ef4444;
+            --hva-warning: #f59e0b;
+            --hva-success: #10b981;
+            --card-radius: 16px;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.dark-theme {
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+
+        .hva-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 24px 80px 24px;
+        }
+
+        /* Top Bar */
+        .hva-header {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .hva-header {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .hva-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hva-logo-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .hva-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .hva-nav-btn {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        body.dark-theme .hva-nav-btn {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .hva-nav-btn.active {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #2563eb;
+        }
+
+        body.dark-theme .hva-nav-btn.active {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #2563eb;
+            color: #60a5fa;
+        }
+
+        /* KPI Cards Strip */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        body.dark-theme .kpi-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-theme .kpi-title {
+            color: #94a3b8;
+        }
+
+        .kpi-num {
+            font-size: 26px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+        }
+
+        /* Toolbar & Filters */
+        .filter-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .filter-panel {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .filter-control {
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 13px;
+            background: #f8fafc;
+            color: inherit;
+            outline: none;
+        }
+
+        body.dark-theme .filter-control {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        /* Data Table */
+        .table-responsive {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        body.dark-theme .table-responsive {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .hva-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .hva-table th {
+            background: #f8fafc;
+            padding: 14px 18px;
+            font-weight: 800;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-theme .hva-table th {
+            background: #0f172a;
+            border-bottom-color: #334155;
+            color: #94a3b8;
+        }
+
+        .hva-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            color: inherit;
+            vertical-align: middle;
+        }
+
+        body.dark-theme .hva-table td {
+            border-bottom-color: #334155;
+        }
+
+        .hva-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        body.dark-theme .hva-table tr:hover td {
+            background: #0f172a;
+        }
+
+        .tag-pill {
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag-cell {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .tag-side {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .tag-string {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-theme .modal-card {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        body.dark-theme .modal-header {
+            border-bottom-color: #334155;
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .photo-viewer-box {
+            background: #000;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .photo-viewer-img {
+            max-width: 100%;
+            max-height: 440px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="hva-container">
+        <!-- Top Navigation -->
+        <header class="hva-header">
+            <div class="hva-brand">
+                <div class="hva-logo-badge">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div>
+                    <h1 style="font-size: 18px; font-weight: 800; margin: 0;">Post-Lamination Defective Registry</h1>
+                    <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Historical Visual Adjudication Log & Defect Auditing</p>
+                </div>
+            </div>
+            <div class="hva-nav-links">
+                <a href="/human-vision" class="hva-nav-btn">
+                    <i class="fa-solid fa-barcode"></i>
+                    <span>Inspection</span>
+                </a>
+                <a href="/human-vision-audit" class="hva-nav-btn active">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span>Defects Registry</span>
+                </a>
+                <a href="/human-vision-reports" class="hva-nav-btn">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Daily Reports</span>
+                </a>
+                <a href="/settings" class="hva-nav-btn">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- KPI Summary Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Total Defective Modules</div>
+                <div class="kpi-num text-danger" id="kpi-total-records">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-solar-panel me-1" style="color:#ef4444;"></i> Cell Defects</div>
+                <div class="kpi-num text-danger" id="kpi-cell-defects">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-arrows-left-right me-1" style="color:#f59e0b;"></i> Side Misalignments</div>
+                <div class="kpi-num text-warning" id="kpi-side-defects">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-grip-lines-vertical me-1" style="color:#0284c7;"></i> String Gaps</div>
+                <div class="kpi-num text-blue" id="kpi-string-gaps">0</div>
+            </div>
+        </div>
+
+        <!-- Filter Toolbar -->
+        <div class="filter-panel">
+            <input type="text" id="filter-search" class="filter-control" placeholder="Search serial or notes..." style="flex: 1; min-width: 220px;">
+            
+            <label style="font-size: 12px; font-weight: 700; color: #64748b;">From:</label>
+            <input type="date" id="filter-from-date" class="filter-control">
+
+            <label style="font-size: 12px; font-weight: 700; color: #64748b;">To:</label>
+            <input type="date" id="filter-to-date" class="filter-control">
+
+            <select id="filter-category" class="filter-control">
+                <option value="all">All Categories</option>
+                <option value="cell">Cell Defects Only</option>
+                <option value="side">Side Misalignments Only</option>
+                <option value="string">String Gaps Only</option>
+            </select>
+
+            <select id="filter-inspector" class="filter-control">
+                <option value="all">All Inspectors</option>
+            </select>
+
+            <button id="btn-refresh" class="hva-nav-btn" style="cursor: pointer;">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Refresh</span>
+            </button>
+        </div>
+
+        <!-- Records Table -->
+        <div class="table-responsive">
+            <table class="hva-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Serial Number</th>
+                        <th>Inspection Datetime</th>
+                        <th>Inspector</th>
+                        <th>Defect Categories</th>
+                        <th>Defect Count</th>
+                        <th>Photo</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="records-tbody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+                            <i class="fa-solid fa-spinner fa-spin me-2"></i> Loading records...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Detail & Photo Modal -->
+    <div id="record-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 800; font-family: 'JetBrains Mono', monospace;" id="modal-serial">ANM...</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;" id="modal-subtext"></p>
+                </div>
+                <button id="btn-close-modal" style="width: 34px; height: 34px; border-radius: 8px; border: 1px solid #cbd5e1; background: transparent; cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Captured Photo -->
+                <div id="modal-photo-section">
+                    <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #64748b; margin: 0 0 8px 0;">
+                        <i class="fa-solid fa-camera me-1"></i> Captured Thermal Lamination Photo
+                    </h4>
+                    <div class="photo-viewer-box">
+                        <img id="modal-photo-img" class="photo-viewer-img" src="" alt="Post-Lamination Defect Photo">
+                    </div>
+                </div>
+
+                <!-- Defects Breakdown Table -->
+                <div>
+                    <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #ef4444; margin: 0 0 8px 0;">
+                        <i class="fa-solid fa-list-check me-1"></i> Recorded Defects
+                    </h4>
+                    <div id="modal-defects-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+
+                <!-- Notes -->
+                <div id="modal-notes-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 12px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/human_vision_audit.js?v=1.0.0"></script>
+</body>
+</html>
