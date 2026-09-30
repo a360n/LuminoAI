@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Post-Lamination Daily Quality Reports - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+
+    <style>
+        :root {
+            --hvr-primary: #2563eb;
+            --hvr-danger: #ef4444;
+            --hvr-warning: #f59e0b;
+            --hvr-success: #10b981;
+            --card-radius: 16px;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.dark-theme {
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+
+        .hvr-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 24px 80px 24px;
+        }
+
+        /* Top Bar */
+        .hvr-header {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .hvr-header {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .hvr-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hvr-logo-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .hvr-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .hvr-nav-btn {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        body.dark-theme .hvr-nav-btn {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .hvr-nav-btn.active {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #2563eb;
+        }
+
+        body.dark-theme .hvr-nav-btn.active {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #2563eb;
+            color: #60a5fa;
+        }
+
+        /* Layout Grid */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Days Sidebar */
+        .days-sidebar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        body.dark-theme .days-sidebar {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .day-item-btn {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+        }
+
+        body.dark-theme .day-item-btn {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .day-item-btn:hover {
+            border-color: var(--hvr-primary);
+        }
+
+        .day-item-btn.active {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #2563eb;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+        }
+
+        body.dark-theme .day-item-btn.active {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #2563eb;
+            color: #60a5fa;
+        }
+
+        /* Main Report Card */
+        .report-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        body.dark-theme .report-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .report-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .report-kpi-tile {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        body.dark-theme .report-kpi-tile {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .report-table th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            font-weight: 800;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+
+        body.dark-theme .report-table th {
+            background: #0f172a;
+            border-bottom-color: #334155;
+            color: #94a3b8;
+        }
+
+        .report-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: inherit;
+        }
+
+        body.dark-theme .report-table td {
+            border-bottom-color: #334155;
+        }
+
+        /* Printable Mode */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .hvr-header, .days-sidebar, .btn-print-dossier, .hvr-nav-links {
+                display: none !important;
+            }
+            .report-grid {
+                display: block !important;
+            }
+            .report-card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            .report-table th, .report-table td {
+                border-color: #ccc !important;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hvr-container">
+        <!-- Top Navigation -->
+        <header class="hvr-header">
+            <div class="hvr-brand">
+                <div class="hvr-logo-badge">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <div>
+                    <h1 style="font-size: 18px; font-weight: 800; margin: 0;">Post-Lamination Quality Reports</h1>
+                    <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Certified Visual Inspection Dossier & Analytics</p>
+                </div>
+            </div>
+            <div class="hvr-nav-links">
+                <a href="/human-vision" class="hvr-nav-btn">
+                    <i class="fa-solid fa-barcode"></i>
+                    <span>Inspection</span>
+                </a>
+                <a href="/human-vision-audit" class="hvr-nav-btn">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span>Defects Registry</span>
+                </a>
+                <a href="/human-vision-reports" class="hvr-nav-btn active">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Daily Reports</span>
+                </a>
+                <a href="/settings" class="hvr-nav-btn">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="report-grid">
+            <!-- Available Days Sidebar -->
+            <aside class="days-sidebar">
+                <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 6px;">
+                    <i class="fa-solid fa-calendar-days me-1"></i> Production Dates
+                </div>
+                <div id="days-list-container" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 12px;">
+                        <i class="fa-solid fa-spinner fa-spin me-1"></i> Loading dates...
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Report Details Card -->
+            <main class="report-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+                    <div>
+                        <h2 style="font-size: 18px; font-weight: 800; margin: 0;" id="report-date-title">Date: --</h2>
+                        <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Official Post-Lamination Visual Inspection Dossier</p>
+                    </div>
+                    <button id="btn-print" class="hvr-nav-btn btn-print-dossier" style="background: var(--hvr-primary); color: #fff; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Certified Report</span>
+                    </button>
+                </div>
+
+                <!-- KPI Tiles -->
+                <div class="report-kpi-grid">
+                    <div class="report-kpi-tile">
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">DEFECTIVE MODULES</div>
+                        <div style="font-size: 22px; font-weight: 800; color: #ef4444; font-family: 'JetBrains Mono', monospace;" id="kpi-defective-modules">0</div>
+                    </div>
+                    <div class="report-kpi-tile">
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">TOTAL DEFECTS</div>
+                        <div style="font-size: 22px; font-weight: 800; color: #f59e0b; font-family: 'JetBrains Mono', monospace;" id="kpi-total-defects">0</div>
+                    </div>
+                    <div class="report-kpi-tile">
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">CELL DEFECTS</div>
+                        <div style="font-size: 22px; font-weight: 800; color: #dc2626; font-family: 'JetBrains Mono', monospace;" id="kpi-cell-defects">0</div>
+                    </div>
+                    <div class="report-kpi-tile">
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">SIDE MISALIGNMENT</div>
+                        <div style="font-size: 22px; font-weight: 800; color: #d97706; font-family: 'JetBrains Mono', monospace;" id="kpi-side-defects">0</div>
+                    </div>
+                    <div class="report-kpi-tile">
+                        <div style="font-size: 11px; font-weight: 700; color: #64748b;">STRING GAPS</div>
+                        <div style="font-size: 22px; font-weight: 800; color: #0284c7; font-family: 'JetBrains Mono', monospace;" id="kpi-string-gaps">0</div>
+                    </div>
+                </div>
+
+                <!-- Inspector Contributions -->
+                <div>
+                    <h3 style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #64748b; margin: 0 0 10px 0;">
+                        <i class="fa-solid fa-users me-1"></i> Visual Inspectors Roster for this Day
+                    </h3>
+                    <div id="inspectors-chips" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                </div>
+
+                <!-- Defective Panels Ledger Table -->
+                <div>
+                    <h3 style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ef4444; margin: 0 0 10px 0;">
+                        <i class="fa-solid fa-list-check me-1"></i> Recorded Defective Panels Detail
+                    </h3>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow-x: auto;">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Serial Number</th>
+                                    <th>Time</th>
+                                    <th>Inspector</th>
+                                    <th>Defects Recorded</th>
+                                    <th>Defect Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-tbody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 30px; color: #94a3b8;">
+                                        Select a production date to load report.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/human_vision_reports.js?v=1.0.0"></script>
+</body>
+</html>

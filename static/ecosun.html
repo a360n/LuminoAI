@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoSUN Solar Simulator Station - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.6.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.6.0"></script>
+    <style>
+        :root {
+            --ecosun-primary: #ea580c;
+            --ecosun-accent: #f97316;
+            --ecosun-bg: rgba(234, 88, 12, 0.08);
+            --card-radius: 16px;
+        }
+
+        .ecosun-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 16px 24px 60px 24px;
+        }
+
+        .ecosun-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            margin-top: 18px;
+        }
+
+        @media (max-width: 1024px) {
+            .ecosun-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hero-metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--card-radius);
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .metrics-subgrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .metrics-subgrid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .metric-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .metric-box .label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-box .val {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+        }
+
+        .grade-badge-huge {
+            font-size: 28px;
+            font-weight: 900;
+            padding: 6px 24px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            display: inline-block;
+        }
+
+        .grade-a { background: rgba(16, 185, 129, 0.15); color: #059669; border: 2px solid #10b981; }
+        .grade-b { background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 2px solid #3b82f6; }
+        .grade-c { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 2px solid #f59e0b; }
+        .grade-rej { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 2px solid #ef4444; }
+
+        .scoreboard-card {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--card-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tests-table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--card-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .flasher-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .flasher-table th {
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--card-border);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .flasher-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--card-border);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .flasher-table tr:hover td {
+            background: var(--bg-surface);
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="app-container ecosun-container">
+        
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo-container" style="background: linear-gradient(135deg, #ea580c, #d97706); color: #fff; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-factory-name">EcoSUN Simulator Station</h1>
+                    <p class="subtitle">Solar Simulator &amp; Flasher IV-Curve Performance Live Monitor</p>
+                </div>
+            </div>
+
+            <!-- Header Navigation Bar -->
+            <div class="mode-tabs">
+                <a href="/post-lam" class="tab-btn">
+                    <i class="fa-solid fa-microscope text-gold"></i> Post-Lam EcoLAB
+                </a>
+                <a href="/ecosun" class="tab-btn active">
+                    <i class="fa-solid fa-sun text-gold"></i> EcoSUN
+                </a>
+                <a href="/ecohipot" class="tab-btn">
+                    <i class="fa-solid fa-shield-halved text-gold"></i> EcoHIPOT
+                </a>
+                <a href="/before-buzzer" class="tab-btn">
+                    <i class="fa-solid fa-bell text-gold"></i> Before-Buzzer
+                </a>
+                <a href="/pending" class="tab-btn">
+                    <i class="fa-solid fa-clock-rotate-left text-gold"></i> Pre-Lam Pending
+                </a>
+                <a href="/audit" class="tab-btn">
+                    <i class="fa-solid fa-clipboard-check text-gold"></i> Audit Registry
+                </a>
+                <a href="/settings#machines" class="tab-btn">
+                    <i class="fa-solid fa-network-wired text-gold"></i> Machine Settings
+                </a>
+                <a href="/qrcodes" class="tab-btn">
+                    <i class="fa-solid fa-qrcode text-gold"></i> QR Portals
+                </a>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="header-actions">
+                <div id="ecosun-status-pill" class="connection-status-pill online">
+                    <span class="status-dot"></span>
+                    <span id="ecosun-status-text">EcoSUN Stream Online</span>
+                </div>
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="ecosun-grid">
+            
+            <!-- Left Hero Section: Active Flashed Panel -->
+            <div class="hero-metric-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px;">
+                    <div>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Latest Tested Barcode</span>
+                        <h2 id="hero-serial" style="margin: 4px 0 0 0; font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace;">Awaiting Test...</h2>
+                        <span id="hero-time" style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">--:--:--</span>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Electrical Grade</span>
+                        <span id="hero-grade-badge" class="grade-badge-huge grade-a">--</span>
+                    </div>
+                </div>
+
+                <!-- 8 Electrical Parameters Subgrid -->
+                <div class="metrics-subgrid">
+                    <div class="metric-box">
+                        <span class="label">Max Power (Pmax)</span>
+                        <span id="val-pmax" class="val" style="color: var(--ecosun-primary);">-- W</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Open Voltage (Voc)</span>
+                        <span id="val-voc" class="val">-- V</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Short Current (Isc)</span>
+                        <span id="val-isc" class="val">-- A</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Fill Factor (FF)</span>
+                        <span id="val-ff" class="val">-- %</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Efficiency (&eta;)</span>
+                        <span id="val-eff" class="val">-- %</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Series Res. (Rs)</span>
+                        <span id="val-rs" class="val">-- &Omega;</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Shunt Res. (Rsh)</span>
+                        <span id="val-rsh" class="val">-- &Omega;</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label">Temp / Irradiance</span>
+                        <span id="val-env" class="val" style="font-size: 16px;">25&deg;C / 1000 W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Scoreboard -->
+            <div class="scoreboard-card">
+                <h3 style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Today's Flasher Summary</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Total Panels Flashed</span>
+                        <span id="stat-total-tested" style="font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace;">0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Average Pmax</span>
+                        <span id="stat-avg-pmax" style="font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--ecosun-primary);">0.0 W</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Average Efficiency</span>
+                        <span id="stat-avg-eff" style="font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace;">0.0 %</span>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--card-border); padding-top: 14px;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Grade Breakdown</span>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border); display: flex; justify-content: space-between;">
+                            <span style="font-weight: 700; color: #059669;">Grade A</span>
+                            <span id="cnt-grade-a" style="font-weight: 800; font-family: 'JetBrains Mono', monospace;">0</span>
+                        </div>
+                        <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border); display: flex; justify-content: space-between;">
+                            <span style="font-weight: 700; color: #2563eb;">Grade B</span>
+                            <span id="cnt-grade-b" style="font-weight: 800; font-family: 'JetBrains Mono', monospace;">0</span>
+                        </div>
+                        <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border); display: flex; justify-content: space-between;">
+                            <span style="font-weight: 700; color: #d97706;">Grade C</span>
+                            <span id="cnt-grade-c" style="font-weight: 800; font-family: 'JetBrains Mono', monospace;">0</span>
+                        </div>
+                        <div style="background: var(--bg-surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border); display: flex; justify-content: space-between;">
+                            <span style="font-weight: 700; color: #dc2626;">Reject</span>
+                            <span id="cnt-grade-rej" style="font-weight: 800; font-family: 'JetBrains Mono', monospace;">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Recent Flasher Tests Table -->
+        <div class="tests-table-wrapper">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase;">Recent EcoSUN Tests</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="search-flasher-input" placeholder="Search Barcode..." style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--card-border); background: var(--bg-surface); color: var(--text-main); font-size: 12px;">
+                    <button id="btn-refresh-ecosun" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                        <i class="fa-solid fa-rotate"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <table class="flasher-table">
+                <thead>
+                    <tr>
+                        <th>Barcode / S/N</th>
+                        <th>Timestamp</th>
+                        <th>Pmax (W)</th>
+                        <th>Voc (V)</th>
+                        <th>Isc (A)</th>
+                        <th>FF (%)</th>
+                        <th>Efficiency (%)</th>
+                        <th>Grade</th>
+                        <th>Passport</th>
+                    </tr>
+                </thead>
+                <tbody id="flasher-table-body">
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading EcoSUN live feed...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/ecosun.js?v=1.0.0"></script>
+</body>
+</html>

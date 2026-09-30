@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <script src="/static/shield.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Before-Buzzer Station - Quality Audit Registry - LuminoAI</title>
+    <link rel="stylesheet" href="/static/style.css?v=5.5.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/theme_manager.js?v=5.5.0"></script>
+
+    <style>
+        :root {
+            --buzzer-primary: #0284c7;
+            --buzzer-accent: #0369a1;
+            --buzzer-danger: #ef4444;
+            --buzzer-warning: #f59e0b;
+            --buzzer-success: #10b981;
+            --card-radius: 18px;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body.dark-theme {
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+
+        .buzzer-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 12px 14px 80px 14px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .buzzer-container {
+                padding: 20px 24px 80px 24px;
+            }
+        }
+
+        /* Header Navigation & Live Bar */
+        .buzzer-header {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .buzzer-header {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        .buzzer-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .buzzer-logo-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            flex-shrink: 0;
+        }
+
+        .buzzer-title-group h1 {
+            font-size: 17px;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            color: inherit;
+        }
+
+        .buzzer-title-group p {
+            font-size: 12px;
+            color: #64748b;
+            margin: 2px 0 0 0;
+            font-weight: 500;
+        }
+
+        body.dark-theme .buzzer-title-group p {
+            color: #94a3b8;
+        }
+
+        .buzzer-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Live status pill */
+        .live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        body.dark-theme .live-pill {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            animation: pulse-dot 1.8s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .btn-header-action {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        body.dark-theme .btn-header-action {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .btn-header-action:hover {
+            background: #e2e8f0;
+        }
+
+        /* DYNAMIC SCOREBOARD (4 KPIs + Defect Breakdown) */
+        .audit-executive-board {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+
+        body.dark-theme .audit-executive-board {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        .audit-kpi-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        @media (min-width: 768px) {
+            .audit-kpi-row {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 14px;
+            }
+        }
+
+        .audit-kpi-col {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        body.dark-theme .audit-kpi-col {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        body.dark-theme .kpi-label {
+            color: #94a3b8;
+        }
+
+        .kpi-number {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 4px 0 2px 0;
+            color: #0f172a;
+        }
+
+        body.dark-theme .kpi-number {
+            color: #f8fafc;
+        }
+
+        .kpi-desc {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Defect breakdown pill strip */
+        .audit-cases-strip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .audit-cases-strip {
+            border-color: #334155;
+        }
+
+        .audit-cases-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .audit-cases-chips {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 2px;
+            flex: 1;
+        }
+
+        .audit-case-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        body.dark-theme .audit-case-pill {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .audit-case-pill .count {
+            background: #e2e8f0;
+            padding: 1px 6px;
+            border-radius: 9999px;
+            font-size: 10px;
+        }
+
+        body.dark-theme .audit-case-pill .count {
+            background: #334155;
+        }
+
+        .audit-case-pill.case-1 {
+            background: #fff1f2;
+            border-color: #fda4af;
+            color: #be123c;
+        }
+
+        body.dark-theme .audit-case-pill.case-1 {
+            background: rgba(225, 29, 72, 0.15);
+            border-color: rgba(225, 29, 72, 0.4);
+            color: #fda4af;
+        }
+
+        /* 3-ROW FILTER TOOLBAR */
+        .audit-filter-toolbar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        body.dark-theme .audit-filter-toolbar {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        .filter-row-1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 9px 12px 9px 36px;
+            border-radius: 9999px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: inherit;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        body.dark-theme .search-input {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .search-input:focus {
+            border-color: var(--buzzer-primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        .filter-row-2, .filter-row-3 {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+
+        body.dark-theme .filter-row-2, body.dark-theme .filter-row-3 {
+            border-color: #334155;
+        }
+
+        .filter-group-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        .audit-filter-pill-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill-btn {
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        body.dark-theme .filter-pill-btn {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .filter-pill-btn.active {
+            background: #0284c7;
+            border-color: #0284c7;
+            color: #ffffff;
+        }
+
+        /* AUDITED PANELS STREAM */
+        .stream-card-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--card-radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+
+        body.dark-theme .stream-card-box {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        .stream-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        body.dark-theme .stream-header {
+            border-color: #334155;
+        }
+
+        .audit-panel-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        body.dark-theme .audit-panel-item {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .audit-panel-item:hover {
+            border-color: #0284c7;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+        }
+
+        .panel-item-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .panel-sn-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 14px;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-badges-strip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge-clean {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #059669;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .badge-defective {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #e11d48;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .panel-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        body.dark-theme .panel-meta-row {
+            color: #94a3b8;
+        }
+
+        /* MODAL STYLING (TOUCH FRIENDLY) */
+        .audit-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .audit-modal-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            max-width: 1040px;
+            width: 100%;
+            max-height: 94vh;
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+        }
+
+        body.dark-theme .audit-modal-card {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        .btn-modal-close-top {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.15s;
+            z-index: 10;
+        }
+
+        body.dark-theme .btn-modal-close-top {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        /* Viewport interactive full image */
+        .panel-viewport-container {
+            width: 100%;
+            height: 320px;
+            background: #000000;
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        @media (min-width: 768px) {
+            .panel-viewport-container {
+                height: 420px;
+            }
+        }
+
+        .panel-viewport-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 5;
+        }
+
+        .panel-viewport-btn {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .panel-viewport-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .panel-viewport-badge {
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0 4px;
+        }
+
+        .panel-viewport-img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            transition: transform 0.1s ease-out;
+            pointer-events: none;
+        }
+
+        /* High-Res Cropped Cell Gallery */
+        .audit-cells-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .audit-cell-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        body.dark-theme .audit-cell-card {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .audit-cell-card:hover {
+            border-color: #0284c7;
+            transform: scale(1.02);
+        }
+
+        .audit-cell-thumb-wrapper {
+            width: 100%;
+            height: 80px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .audit-cell-thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="buzzer-container">
+        
+        <!-- Header Bar -->
+        <header class="buzzer-header">
+            <div class="buzzer-brand">
+                <div class="buzzer-logo-badge">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <div class="buzzer-title-group">
+                    <h1>Before-Buzzer Station</h1>
+                    <p>Pre-Bussing EcoLAB Quality Audit & Anomaly Feed</p>
+                </div>
+            </div>
+
+            <div class="buzzer-header-actions">
+                <div class="live-pill">
+                    <span class="live-dot"></span>
+                    <span id="audit-last-updated">LIVE SYNC</span>
+                </div>
+                <button type="button" class="btn-header-action" id="btn-refresh-audit" title="Refresh Feed">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 1. DYNAMIC AUDITED SCOREBOARD (4 Dynamic KPIs + Defect Breakdown) -->
+        <section class="audit-executive-board" id="global-stats-grid">
+            <div class="audit-kpi-row">
+                <div class="audit-kpi-col">
+                    <span class="kpi-label"><i class="fa-solid fa-solar-panel text-blue"></i> Filtered Modules</span>
+                    <div class="kpi-number" id="stat-total-audited">0</div>
+                    <span class="kpi-desc">Matching Active Criteria</span>
+                </div>
+
+                <div class="audit-kpi-col">
+                    <span class="kpi-label"><i class="fa-solid fa-circle-check" style="color: #10b981;"></i> Clean / Healthy</span>
+                    <div class="kpi-number" style="color: #10b981;" id="stat-clean-count">0 <span style="font-size: 13px; font-weight: 600; opacity: 0.8;" id="stat-clean-pct">(0%)</span></div>
+                    <span class="kpi-desc">Zero Confirmed Anomalies</span>
+                </div>
+
+                <div class="audit-kpi-col">
+                    <span class="kpi-label"><i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i> Defective Panels</span>
+                    <div class="kpi-number" style="color: #ef4444;" id="stat-defective-count">0 <span style="font-size: 13px; font-weight: 600; opacity: 0.8;" id="stat-defective-pct">(0%)</span></div>
+                    <span class="kpi-desc">Confirmed Cell Anomalies</span>
+                </div>
+
+                <div class="audit-kpi-col">
+                    <span class="kpi-label"><i class="fa-solid fa-percent" style="color: #f59e0b;"></i> Quality Yield</span>
+                    <div class="kpi-number" style="color: #f59e0b;" id="stat-quality-yield">100%</div>
+                    <span class="kpi-desc">Clean Module Ratio</span>
+                </div>
+            </div>
+
+            <!-- Defect Breakdown Pill Strip -->
+            <div class="audit-cases-strip" id="audit-defect-breakdown-strip">
+                <div class="audit-cases-title">
+                    <i class="fa-solid fa-tags text-blue"></i> Defect Breakdown:
+                </div>
+                <div class="audit-cases-chips" id="stat-defect-chips-container">
+                    <!-- Populated dynamically: Crack, Mini-crack, Short, Open-ribbon, Missing ribbon, Impurities -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MULTI-DIMENSIONAL AUDIT FILTER & SEARCH TOOLBAR -->
+        <section class="audit-filter-toolbar">
+            <!-- Row 1: Search & Reset -->
+            <div class="filter-row-1">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="audit-search-input" class="search-input" placeholder="Search by serial number, filename, or operator...">
+                </div>
+                <button type="button" class="btn-header-action" id="btn-reset-filters">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+
+            <!-- Row 2: Date Range & Shift Toggle -->
+            <div class="filter-row-2">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="filter-group-label"><i class="fa-regular fa-calendar text-blue"></i> Date Range:</span>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="date" id="audit-date-from" class="form-control" style="padding: 5px 8px; font-size: 12px; border-radius: 8px; width: auto;">
+                        <span style="font-size: 11px; color: #64748b;">to</span>
+                        <input type="date" id="audit-date-to" class="form-control" style="padding: 5px 8px; font-size: 12px; border-radius: 8px; width: auto;">
+                        <button type="button" id="btn-clear-dates" class="btn-header-action" style="padding: 5px 8px;" title="Clear Dates">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="filter-group-label"><i class="fa-solid fa-business-time text-blue"></i> Shifts:</span>
+                    <div class="audit-filter-pill-group" id="audit-shift-buttons">
+                        <button type="button" class="filter-pill-btn active" data-shift="all">All Shifts</button>
+                        <button type="button" class="filter-pill-btn" data-shift="shift_1"><i class="fa-solid fa-sun me-1"></i> Morning</button>
+                        <button type="button" class="filter-pill-btn" data-shift="shift_2"><i class="fa-solid fa-cloud-sun me-1"></i> Evening</button>
+                        <button type="button" class="filter-pill-btn" data-shift="shift_3"><i class="fa-solid fa-moon me-1"></i> Night</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Outcome Status & Defect Types Multi-Select -->
+            <div class="filter-row-3">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="filter-group-label"><i class="fa-solid fa-shield-halved text-blue"></i> Status:</span>
+                    <div class="audit-filter-pill-group" id="audit-status-buttons">
+                        <button type="button" class="filter-pill-btn active" data-status="all">All Panels</button>
+                        <button type="button" class="filter-pill-btn" data-status="clean"><i class="fa-solid fa-circle-check text-green me-1"></i> Clean</button>
+                        <button type="button" class="filter-pill-btn" data-status="defective"><i class="fa-solid fa-triangle-exclamation text-red me-1"></i> Defective</button>
+                    </div>
+                </div>
+
+                <div id="defect-types-filter-wrapper" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="filter-group-label"><i class="fa-solid fa-bug text-blue"></i> Defects:</span>
+                    <div class="audit-filter-pill-group" id="audit-defect-type-buttons">
+                        <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Crack">Crack</button>
+                        <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Mini-crack">Mini-crack</button>
+                        <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Short">Short</button>
+                        <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Open-ribbon">Open-ribbon</button>
+                        <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Missing ribbon">Missing ribbon</button>
+                        <button type="button" class="filter-pill-btn defect-type-pill" data-defect="Impurities">Impurities</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. AUDITED PANELS STREAM -->
+        <main class="stream-card-box">
+            <div class="stream-header">
+                <h3 style="font-size: 15px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-list-check text-blue"></i> Audited Panels Stream
+                    <span id="audit-count-badge" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; font-size: 11px; border-radius: 9999px; padding: 2px 8px; font-weight: 800;">0</span>
+                </h3>
+                <span style="font-size: 11px; color: #64748b;">Auto-refreshing every 3s</span>
+            </div>
+
+            <div id="audit-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="text-align: center; padding: 40px; color: #64748b;">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x text-blue"></i>
+                    <p style="margin-top: 10px; font-size: 13px;">Loading EcoLAB audit stream...</p>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Detailed Modal for Audited Panel -->
+    <div class="audit-modal-backdrop" id="audit-detail-modal">
+        <div class="audit-modal-card">
+            <button type="button" class="btn-modal-close-top" id="btn-close-audit-modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Modal Header -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #0284c7; font-size: 20px;">
+                    <i class="fa-solid fa-microscope"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 800;" id="modal-panel-title">Panel Audit & Inspection Details</h3>
+                    <div style="font-size: 12px; margin-top: 3px; color: #64748b;" id="modal-panel-subtitle">--</div>
+                </div>
+            </div>
+
+            <!-- Match Status Banner -->
+            <div id="modal-match-banner" style="padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <span id="modal-match-text">--</span>
+                <span id="modal-match-badge" style="border-radius: 9999px; padding: 3px 12px; font-size: 11px;">--</span>
+            </div>
+
+            <!-- Full Panel Interactive Viewport -->
+            <div style="margin-bottom: 18px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <h5 style="margin: 0; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-solar-panel text-blue"></i> Full Module High-Resolution Image:
+                    </h5>
+                    <span style="font-size: 11px; color: #64748b;"><i class="fa-solid fa-hand-pointer me-1"></i> Pan & Zoom</span>
+                </div>
+                <div class="panel-viewport-container" id="modal-panel-viewport">
+                    <div class="panel-viewport-toolbar">
+                        <button type="button" class="panel-viewport-btn" id="btn-panel-zoom-in" title="Zoom In (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button type="button" class="panel-viewport-btn" id="btn-panel-zoom-out" title="Zoom Out (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <span class="panel-viewport-badge" id="panel-zoom-badge">100%</span>
+                        <button type="button" class="panel-viewport-btn" id="btn-panel-rotate" title="Rotate 90°"><i class="fa-solid fa-rotate-right"></i></button>
+                        <button type="button" class="panel-viewport-btn" id="btn-panel-reset" title="Reset View"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                    </div>
+                    <img id="modal-panel-img" class="panel-viewport-img" src="" alt="Full Panel View">
+                </div>
+            </div>
+
+            <!-- Ground Truth Confirmed Defective Cells Tags -->
+            <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 14px; padding: 14px; margin-bottom: 18px;">
+                <h5 style="margin: 0 0 8px 0; color: #e11d48; font-size: 12px; text-transform: uppercase; font-weight: 800;"><i class="fa-solid fa-circle-xmark me-1"></i> Ground Truth Confirmed Defective Cells:</h5>
+                <div id="modal-confirmed-defects-tags" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <span style="font-size: 12px; color: #64748b;">--</span>
+                </div>
+            </div>
+
+            <!-- High-Resolution Defective Cell Gallery -->
+            <div style="margin-bottom: 18px;" id="modal-cells-gallery-section">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <h5 style="margin: 0; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-images text-blue"></i> High-Resolution Defective Cell Inspects:
+                    </h5>
+                    <span style="font-size: 11px; color: #64748b;">Tap cell to enlarge</span>
+                </div>
+                <div class="audit-cells-gallery" id="modal-defective-cells-gallery">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Disputed Cells Adjudication Table -->
+            <div style="margin-bottom: 16px;">
+                <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700;"><i class="fa-solid fa-scale-balanced text-blue me-1"></i> Disputed Cells Adjudication Table:</h5>
+                <div id="modal-disputes-table-container" style="overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 14px;">
+                <button type="button" class="btn-header-action" id="btn-close-modal-bottom" style="padding: 8px 24px; font-weight: 800;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cell Lightbox Modal -->
+    <div class="audit-modal-backdrop" id="cell-lightbox-modal" style="z-index: 10000; background: rgba(0, 0, 0, 0.88);">
+        <div class="audit-modal-card" style="max-width: 600px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <h4 id="cell-lightbox-title" style="margin: 0; font-size: 14px; font-weight: 800;">Cell Detail Inspection</h4>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" class="btn-header-action" id="btn-cell-lb-zoom-in" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button type="button" class="btn-header-action" id="btn-cell-lb-zoom-out" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <button type="button" class="btn-header-action" id="btn-cell-lb-rotate" title="Rotate 90°"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button type="button" class="btn-header-action" id="btn-cell-lb-reset" title="Reset"><i class="fa-solid fa-arrows-to-dot"></i></button>
+                    <button type="button" class="btn-header-action" id="cell-lightbox-close" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div style="width: 100%; height: 320px; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; cursor: grab;" id="cell-lb-viewport">
+                <img id="cell-lightbox-img" src="" alt="Cell High-Res" style="max-width: 90%; max-height: 90%; object-fit: contain; transition: transform 0.12s ease-out; pointer-events: none;">
+            </div>
+            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+                <span id="cell-lightbox-subtitle">Classification: Defective</span>
+                <span id="cell-lb-zoom-badge" style="font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #0284c7;">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/before_buzzer.js?v=2.0.0"></script>
+</body>
+</html>
