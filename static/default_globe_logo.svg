@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <!-- Subtle outer orbit glow ring -->
+  <circle cx="60" cy="60" r="54" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/>
+  
+  <!-- Outer Globe Boundary -->
+  <circle cx="60" cy="60" r="46" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/>
+  
+  <!-- Latitude Ellipses -->
+  <ellipse cx="60" cy="60" rx="46" ry="24" stroke="#94a3b8" stroke-width="2" stroke-opacity="0.75" fill="none"/>
+  <ellipse cx="60" cy="60" rx="46" ry="10" stroke="#64748b" stroke-width="1.5" stroke-opacity="0.6" fill="none"/>
+  <line x1="14" y1="60" x2="106" y2="60" stroke="#cbd5e1" stroke-width="2" stroke-opacity="0.85"/>
+  
+  <!-- Longitude Ellipses -->
+  <ellipse cx="60" cy="60" rx="24" ry="46" stroke="#94a3b8" stroke-width="2" stroke-opacity="0.75" fill="none"/>
+  <ellipse cx="60" cy="60" rx="10" ry="46" stroke="#64748b" stroke-width="1.5" stroke-opacity="0.6" fill="none"/>
+  <line x1="60" y1="14" x2="60" y2="106" stroke="#cbd5e1" stroke-width="2" stroke-opacity="0.85"/>
+  
+  <!-- Tech Satellite / Orbit Node -->
+  <circle cx="98" cy="30" r="4.5" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+  <circle cx="22" cy="90" r="3.5" fill="#94a3b8" stroke="#475569" stroke-width="1"/>
+</svg>
